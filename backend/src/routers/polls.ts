@@ -13,6 +13,7 @@ import {
   getVoterHistory,
 } from "../controllers/polls/transactions";
 import exportCsvController from "../controllers/polls/export-csv";
+import singleElectionController from "../controllers/polls/single-election";
 import {
   authenticateToken,
   requireAdmin,
@@ -36,6 +37,7 @@ router.post("/start", requireAdmin, startController);
 router.post("/end", requireAdmin, endController);
 router.post("/reset", requireAdmin, resetController);
 router.get("/admin/stats", requireAdmin, statsController);
+router.get("/admin/election/:id", requireAdmin, singleElectionController);
 router.get("/admin/transactions", requireAdmin, getAllTransactions);
 router.get("/export-csv", requireAdmin, exportCsvController);
 router.get("/export-csv/:id", requireAdmin, exportCsvController);
