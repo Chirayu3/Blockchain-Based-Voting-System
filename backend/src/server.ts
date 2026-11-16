@@ -5,6 +5,7 @@ import cors from "cors";
 import authRouter from "./routers/auth";
 import pollsRouter from "./routers/polls";
 import usersRouter from "./routers/users";
+import errorHandler from "./middlewares/errorHandler";
 
 const app = express();
 
@@ -36,5 +37,8 @@ app.use("/users", usersRouter);
 app.get("/", (req: Request, res: Response) => {
   res.status(200).send("Blockchain Voting System API running.");
 });
+
+// Centralized error handling middleware
+app.use(errorHandler);
 
 export default app;

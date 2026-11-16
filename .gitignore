@@ -1,4 +1,32 @@
-build
-node_modules
-node_modules/**/*
+# Dependencies
+node_modules/
+
+# Environment files
 .env
+.env.local
+.env.*.local
+
+# Logs and runtime data
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Database dumps
+backup_*.json
+
+# Build outputs
+/build/
+frontend/build/
+backend/dist/
+
+# Truffle contract artifacts required by Web3 backend
+!backend/build/
+!backend/build/contracts/
+!backend/build/contracts/*.json

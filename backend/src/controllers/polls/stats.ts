@@ -16,19 +16,7 @@ export default async (req: AuthenticatedRequest, res: Response) => {
       where: { admin: false, verified: false },
     });
 
-    // 2. Election stats
-    const totalElections = await Poll.count();
-    const activeElections = await Poll.count({ where: { status: "running" } });
-    const completedElections = await Poll.count({
-      where: { status: "finished" },
-    });
-
-    // 3. Total votes cast (from Transactions table and blockchain)
-    const totalSuccessfulTx = await Transaction.count({
-      where: { status: "success" },
-    });
-
-    // Current smart contract votes
+    // 2. Current smart contract telemetry & votes (Blockchain is the source of truth)
     let blockchainVotesCount = 0;
     let currentElectionStatus = "not-started";
     let currentElectionName = "";
@@ -57,6 +45,24 @@ export default async (req: AuthenticatedRequest, res: Response) => {
     } catch (bcErr) {
       console.warn("Could not query live smart contract for stats:", bcErr);
     }
+
+    // Synchronize MySQL status with blockchain reality
+    if (currentElectionStatus !== "running") {
+      await Poll.update({ status: "running" }, { status: "finished" });
+    }
+
+    // 3. Election statistics
+    const totalElections = await Poll.count();
+    const activeElections =
+      currentElectionStatus === "running"
+        ? Math.max(1, await Poll.count({ where: { status: "running" } }))
+        : 0;
+    const completedElections = totalElections - activeElections;
+
+    // 4. Total votes cast (from Transactions table and blockchain)
+    const totalSuccessfulTx = await Transaction.count({
+      where: { status: "success" },
+    });
 
     // Total votes cast is at least total successful transactions recorded or blockchain votes
     const totalVotesCast = Math.max(totalSuccessfulTx, blockchainVotesCount);

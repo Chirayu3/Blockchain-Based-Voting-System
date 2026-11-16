@@ -86,31 +86,23 @@ export default async (req: AuthenticatedRequest, res: Response) => {
     return res.status(400).send("Candidate does not exist in this election");
   }
 
-  // Find active poll in database
+  // Check active poll in database
   let currentPoll = await Poll.findOne({
     where: { status: "running" },
     order: { id: "DESC" },
   });
 
-  // If no running poll in MySQL, find or create one matching the blockchain
-  if (!currentPoll) {
-    const electionName = await instance.getElectionName();
-    const electionDesc = await instance.getElectionDescription();
-    currentPoll = new Poll();
-    currentPoll.name = electionName || "Active Election";
-    currentPoll.description = electionDesc || "";
-    currentPoll.status = "running";
-    await currentPoll.save();
-  }
-
   // Check if a transaction already exists for this voter and election in MySQL
-  const existingTx = await Transaction.findOne({
-    where: { voterId: voterIdNum, electionId: currentPoll.id },
-  });
-  if (existingTx) {
-    return res.status(400).send("A transaction record already exists for this ballot");
+  if (currentPoll) {
+    const existingTx = await Transaction.findOne({
+      where: { voterId: voterIdNum, electionId: currentPoll.id },
+    });
+    if (existingTx) {
+      return res.status(400).send("A transaction record already exists for this ballot");
+    }
   }
 
+  // Record vote on Ethereum Blockchain first (Blockchain is the source of truth)
   let result: any;
   try {
     result = await instance.vote(
@@ -126,6 +118,17 @@ export default async (req: AuthenticatedRequest, res: Response) => {
     return res
       .status(400)
       .send(error.reason || error.message || "Failed to record vote on blockchain");
+  }
+
+  // Only AFTER blockchain vote succeeds, ensure MySQL has active poll & record transaction
+  if (!currentPoll) {
+    const electionName = await instance.getElectionName();
+    const electionDesc = await instance.getElectionDescription();
+    currentPoll = new Poll();
+    currentPoll.name = electionName || "Active Election";
+    currentPoll.description = electionDesc || "";
+    currentPoll.status = "running";
+    await currentPoll.save();
   }
 
   // Extract Web3 transaction receipt
