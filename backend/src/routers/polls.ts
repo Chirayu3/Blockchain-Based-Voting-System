@@ -13,6 +13,7 @@ import {
   getVoterHistory,
 } from "../controllers/polls/transactions";
 import exportCsvController from "../controllers/polls/export-csv";
+import singleElectionController from "../controllers/polls/single-election";
 import {
   authenticateToken,
   requireAdmin,
@@ -33,12 +34,12 @@ router.post("/vote", requireVerifiedVoter, asyncHandler(voteController));
 router.get("/voter/history", authenticateToken, asyncHandler(getVoterHistory));
 
 // Admin-only routes (Requires admin authorization)
-router.post("/start", requireAdmin, asyncHandler(startController));
-router.post("/end", requireAdmin, asyncHandler(endController));
-router.post("/reset", requireAdmin, asyncHandler(resetController));
-router.get("/admin/stats", requireAdmin, asyncHandler(statsController));
-router.get("/admin/transactions", requireAdmin, asyncHandler(getAllTransactions));
-router.get("/export-csv", requireAdmin, asyncHandler(exportCsvController));
-router.get("/export-csv/:id", requireAdmin, asyncHandler(exportCsvController));
+router.post("/start", requireAdmin, startController);
+router.post("/end", requireAdmin, endController);
+router.post("/reset", requireAdmin, resetController);
+router.get("/admin/stats", requireAdmin, statsController);
+router.get("/admin/transactions", requireAdmin, getAllTransactions);
+router.get("/export-csv", requireAdmin, exportCsvController);
+router.get("/export-csv/:id", requireAdmin, exportCsvController);
 
 export default router;

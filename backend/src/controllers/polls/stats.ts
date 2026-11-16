@@ -7,7 +7,7 @@ import ElectionContract from "../../web3";
 
 export default async (req: AuthenticatedRequest, res: Response) => {
   try {
-    // 1. Registered Voters (non-admins)
+    // 1. Registered Voters (Distinct non-admins in MySQL, avoiding double-counting)
     const totalVoters = await User.count({ where: { admin: false } });
     const verifiedVoters = await User.count({
       where: { admin: false, verified: true },
@@ -16,31 +16,30 @@ export default async (req: AuthenticatedRequest, res: Response) => {
       where: { admin: false, verified: false },
     });
 
-    // 2. Current smart contract telemetry & votes (Blockchain is the source of truth)
+    // 2. Election stats
+    const totalElections = await Poll.count();
+    const activeElections = await Poll.count({ where: { status: "running" } });
+    const completedElections = await Poll.count({
+      where: { status: "finished" },
+    });
+
+    // 3. Total votes cast (from Transactions table and blockchain)
+    const totalSuccessfulTx = await Transaction.count({
+      where: { status: "success" },
+    });
+
+    // Current smart contract votes
     let blockchainVotesCount = 0;
-    let currentElectionStatus = "not-started";
-    let currentElectionName = "";
-    let currentCandidates: string[] = [];
-    let currentVotesPerCandidate: Record<string, number> = {};
+    let currentContractStatus = "not-started";
+    let currentContractName = "";
 
     try {
       const instance = await ElectionContract.deployed();
-      currentElectionStatus = await instance.getStatus();
-      if (currentElectionStatus !== "not-started") {
-        currentElectionName = await instance.getElectionName();
-        currentCandidates = await instance.getCandidates();
+      currentContractStatus = await instance.getStatus();
+      if (currentContractStatus !== "not-started") {
+        currentContractName = await instance.getElectionName();
         const rawVotes = await instance.getVotes();
         blockchainVotesCount = rawVotes.length;
-
-        for (const c of currentCandidates) {
-          currentVotesPerCandidate[c] = 0;
-        }
-        for (const v of rawVotes) {
-          const cand = v[3];
-          if (currentVotesPerCandidate[cand] !== undefined) {
-            currentVotesPerCandidate[cand]++;
-          }
-        }
       }
     } catch (bcErr) {
       console.warn("Could not query live smart contract for stats:", bcErr);
@@ -69,7 +68,7 @@ export default async (req: AuthenticatedRequest, res: Response) => {
 
     // 4. Recent voting activity (latest 10 transactions with voter & election relations)
     const recentTransactions = await Transaction.find({
-      relations: ["voter", "election"],
+      relations: ["election"],
       order: { id: "DESC" },
       take: 10,
     });
@@ -77,10 +76,13 @@ export default async (req: AuthenticatedRequest, res: Response) => {
     const recentActivity = recentTransactions.map((tx) => ({
       id: tx.id,
       transactionHash: tx.transactionHash,
+      shortHash:
+        tx.transactionHash.length > 14
+          ? `${tx.transactionHash.slice(0, 8)}...${tx.transactionHash.slice(-6)}`
+          : tx.transactionHash,
       voterId: tx.voterId,
-      voterName: tx.voter ? tx.voter.name : `Voter #${tx.voterId}`,
       electionId: tx.electionId,
-      electionName: tx.election ? tx.election.name : "Active Election",
+      electionName: tx.election ? tx.election.name : `Election #${tx.electionId}`,
       candidateName: tx.candidateName,
       blockNumber: tx.blockNumber,
       gasUsed: tx.gasUsed,
@@ -98,15 +100,14 @@ export default async (req: AuthenticatedRequest, res: Response) => {
         total: totalElections,
         active: activeElections,
         completed: completedElections,
-        currentStatus: currentElectionStatus,
-        currentElectionName,
+        currentContractStatus,
+        currentContractName,
       },
       votingStats: {
-        totalVotesCast,
-        liveElectionVotes: blockchainVotesCount,
-        candidates: currentCandidates,
-        candidateVotes: currentVotesPerCandidate,
+        totalVotesAcrossAllElections,
+        totalVotesCast: totalVotesAcrossAllElections,
       },
+      elections: electionsData,
       recentActivity,
     });
   } catch (error) {
