@@ -94,7 +94,7 @@ const Transactions: React.FC = () => {
             <i className="bi bi-search"></i>
             <input
               type="text"
-              placeholder="Search by voter name, tx hash, candidate or election..."
+              placeholder="Search by tx hash, candidate or election..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -144,7 +144,7 @@ const Transactions: React.FC = () => {
               <thead>
                 <tr>
                   <th>Tx Hash</th>
-                  <th>Voter Name & ID</th>
+                  <th>Voter ID</th>
                   <th>Election</th>
                   <th>Candidate Choice</th>
                   <th>Block #</th>
@@ -184,11 +184,12 @@ const Transactions: React.FC = () => {
                         </div>
                       </td>
                       <td>
-                        <div style={{ fontWeight: 600 }}>{tx.voter.name}</div>
-                        <div style={{ fontSize: "0.775rem", color: "#64748b" }}>
-                          ID: {tx.voter.id}
-                          {tx.voter.citizenshipNumber && ` • Cit: ${tx.voter.citizenshipNumber}`}
-                        </div>
+                        <div style={{ fontWeight: 600 }}>ID: {tx.voter.id}</div>
+                        {tx.voter.citizenshipNumber && (
+                          <div style={{ fontSize: "0.775rem", color: "#64748b" }}>
+                            Cit: {tx.voter.citizenshipNumber}
+                          </div>
+                        )}
                       </td>
                       <td>{tx.election.name}</td>
                       <td>
@@ -272,8 +273,7 @@ const Transactions: React.FC = () => {
               <div className="modal-row">
                 <label>Voter Identity</label>
                 <div className="modal-value">
-                  {selectedTx.voter.name} (Voter ID: {selectedTx.voter.id})
-                  {selectedTx.voter.email && ` • ${selectedTx.voter.email}`}
+                  Voter ID: {selectedTx.voter.id}
                 </div>
               </div>
 
