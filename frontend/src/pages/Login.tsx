@@ -1,29 +1,48 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router";
 import { Formik } from "formik";
-import { RouteProps } from "react-router";
+import { Link } from "react-router-dom";
 import LoginLayout from "../layouts/Login";
 import * as Yup from "yup";
 import axios from "../axios";
 import { AuthContext } from "../contexts/Auth";
 
 const schema = Yup.object().shape({
-  email: Yup.string().email("Invalid email").required("Required"),
-  password: Yup.string().min(3).required("Required"),
+  email: Yup.string().email("Invalid email format").required("Email is required"),
+  password: Yup.string().min(3).required("Password is required"),
 });
 
-const Login = (props: RouteProps): JSX.Element => {
+const Login = (): JSX.Element => {
   const navigate = useNavigate();
   const authContext = useContext(AuthContext);
 
-  const [error, setError] = useState<any>("");
+  const [error, setError] = useState<string>("");
 
   return (
     <div>
       <LoginLayout error={error}>
         <div className="form-container">
-          <div className="form-title">Account Sign In</div>
-          <div className="form-subtitle">Enter your credentials to access the secure voting system</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+            <span
+              style={{
+                background: "#f0fdf4",
+                color: "#16a34a",
+                padding: "4px 10px",
+                borderRadius: "9999px",
+                fontSize: "0.775rem",
+                fontWeight: 700,
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+              }}
+            >
+              🗳️ Voter Portal
+            </span>
+          </div>
+
+          <div className="form-title">Voter Identification Sign In</div>
+          <div className="form-subtitle">
+            Enter your credentials to cast cryptographic ballots in active elections.
+          </div>
 
           <Formik
             initialValues={{
@@ -32,23 +51,31 @@ const Login = (props: RouteProps): JSX.Element => {
             }}
             validationSchema={schema}
             onSubmit={(values) => {
+              setError("");
               axios
-                .post("/auth/login", { ...values })
+                .post("/auth/login", { ...values, portal: "voter" })
                 .then((res) => {
                   authContext.authenticate(res.data.user, res.data.accessToken);
+                  navigate("/");
                 })
                 .catch((err) => {
-                  let error = err.message;
-                  if (err?.response?.data)
-                    error = JSON.stringify(err.response.data);
-                  setError(error);
+                  let errMessage = err.message;
+                  if (err?.response?.data) {
+                    errMessage =
+                      typeof err.response.data === "string"
+                        ? err.response.data
+                        : JSON.stringify(err.response.data);
+                  }
+                  setError(errMessage);
                 });
             }}
           >
             {({ errors, touched, getFieldProps, handleSubmit }) => (
               <form onSubmit={handleSubmit}>
                 <div className="input-container">
-                  <label htmlFor="email" className="input-label">Email Address</label>
+                  <label htmlFor="email" className="input-label">
+                    Registered Email Address
+                  </label>
                   <input
                     id="email"
                     type="email"
@@ -61,7 +88,9 @@ const Login = (props: RouteProps): JSX.Element => {
                 </div>
 
                 <div className="input-container">
-                  <label htmlFor="password" className="input-label">Password</label>
+                  <label htmlFor="password" className="input-label">
+                    Password
+                  </label>
                   <input
                     id="password"
                     type="password"
@@ -76,22 +105,26 @@ const Login = (props: RouteProps): JSX.Element => {
                 </div>
 
                 <button className="login-button button-primary" type="submit">
-                  Login
+                  <i className="bi bi-box-arrow-in-right"></i> Sign In to Vote
                 </button>
               </form>
             )}
           </Formik>
-
-          <div className="form-info-text">Forgot Password?</div>
 
           <hr />
 
           <button
             onClick={() => navigate("/signup")}
             className="button-secondary"
+            type="button"
           >
-            Create a New Account
+            Register as a New Voter
           </button>
+
+          <div className="portal-switch-banner">
+            <span>Are you an election administrator?</span>
+            <Link to="/admin/login">Access Admin Portal &rarr;</Link>
+          </div>
         </div>
       </LoginLayout>
     </div>

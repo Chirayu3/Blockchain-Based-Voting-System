@@ -1,0 +1,663 @@
+// Advanced Analytics & Dashboard Styling (Antigravity Theme)
+.analytics-dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+
+  .dashboard-title-group {
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 4px 0;
+      letter-spacing: -0.02em;
+    }
+    p {
+      color: #64748b;
+      font-size: 0.95rem;
+      margin: 0;
+    }
+  }
+
+  .dashboard-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+// Statistic Cards Grid
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.stat-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px -1px rgba(15, 23, 42, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px -4px rgba(15, 23, 42, 0.08);
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+
+    &.blue {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+    &.indigo {
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+    &.emerald {
+      background: #ecfdf5;
+      color: #10b981;
+    }
+    &.amber {
+      background: #fffbeb;
+      color: #f59e0b;
+    }
+    &.purple {
+      background: #faf5ff;
+      color: #9333ea;
+    }
+    &.sky {
+      background: #f0f9ff;
+      color: #0284c7;
+    }
+  }
+
+  .stat-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    .stat-label {
+      font-size: 0.825rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .stat-desc {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+  }
+}
+
+// Chart Sections & Visual Containers
+.analytics-grid-two {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 20px;
+}
+
+.analytics-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px -1px rgba(15, 23, 42, 0.05);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 12px;
+
+    h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      i {
+        color: #2563eb;
+      }
+    }
+
+    .card-badge {
+      font-size: 0.775rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: #eff6ff;
+      color: #2563eb;
+    }
+  }
+}
+
+// Turnout Indicator Circle / Progress
+.turnout-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 16px 0;
+  flex-wrap: wrap;
+  gap: 24px;
+
+  .turnout-circle {
+    position: relative;
+    width: 140px;
+    height: 140px;
+
+    svg {
+      transform: rotate(-90deg);
+      width: 140px;
+      height: 140px;
+    }
+
+    .turnout-center-text {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      .percentage {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #0f172a;
+      }
+      .label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+      }
+    }
+  }
+
+  .turnout-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .meta-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+
+        &.voted {
+          background-color: #2563eb;
+        }
+        &.remaining {
+          background-color: #e2e8f0;
+        }
+      }
+
+      .meta-text {
+        font-size: 0.9rem;
+        color: #334155;
+
+        strong {
+          color: #0f172a;
+        }
+      }
+    }
+  }
+}
+
+// Doughnut Chart Component
+.doughnut-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 12px 0;
+  flex-wrap: wrap;
+  gap: 20px;
+
+  .doughnut-chart-svg {
+    width: 160px;
+    height: 160px;
+    transform: rotate(-90deg);
+  }
+
+  .doughnut-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 220px;
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+
+      .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+
+      .legend-label {
+        font-weight: 600;
+        color: #1e293b;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .legend-pct {
+        color: #64748b;
+        margin-left: auto;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// Candidate Comparison Bars
+.candidate-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  .candidate-bar-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    .candidate-bar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+
+      .candidate-name {
+        font-weight: 600;
+        color: #0f172a;
+      }
+      .candidate-count {
+        font-weight: 700;
+        color: #2563eb;
+      }
+    }
+
+    .bar-track {
+      height: 10px;
+      background: #f1f5f9;
+      border-radius: 9999px;
+      overflow: hidden;
+      width: 100%;
+
+      .bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #2563eb 0%, #4f46e5 100%);
+        border-radius: 9999px;
+        transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+    }
+  }
+}
+
+// Table Styling for Transactions & Activity
+.table-container {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px -1px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+
+  .table-header-bar {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+
+    h3 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+    width: 100%;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    text-align: left;
+
+    thead {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+
+      th {
+        padding: 12px 16px;
+        font-weight: 600;
+        color: #475569;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background-color 0.15s ease;
+
+        &:hover {
+          background-color: #f8fafc;
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        td {
+          padding: 14px 16px;
+          color: #334155;
+          vertical-align: middle;
+        }
+      }
+    }
+  }
+}
+
+// Search and Filter Bar
+.search-filter-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+
+  .search-input-wrapper {
+    position: relative;
+    min-width: 260px;
+    flex: 1;
+
+    i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+    }
+
+    input {
+      width: 100%;
+      padding: 9px 12px 9px 36px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      font-size: 0.875rem;
+      background: #ffffff;
+      outline: none;
+      transition: all 0.2s ease;
+
+      &:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      }
+    }
+  }
+
+  select {
+    padding: 9px 14px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 0.875rem;
+    background: #ffffff;
+    outline: none;
+    cursor: pointer;
+    color: #334155;
+
+    &:focus {
+      border-color: #2563eb;
+    }
+  }
+}
+
+// Badges and Shortened Hash Helpers
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.775rem;
+  font-weight: 600;
+
+  &.success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  }
+
+  &.failed {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  }
+
+  &.running {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+  }
+
+  &.finished {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+  }
+}
+
+.hash-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.825rem;
+  color: #0f172a;
+
+  .copy-btn {
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    margin: 0;
+    cursor: pointer;
+    color: #64748b;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+
+    &:hover {
+      color: #2563eb;
+      background: #e2e8f0;
+      transform: none;
+    }
+  }
+}
+
+// Portal Switcher Link
+.portal-switch-banner {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #64748b;
+
+  a {
+    color: #2563eb;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 6px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Modal for Full Transaction Inspection
+.tx-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+
+  .tx-modal {
+    background: #ffffff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 580px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    animation: fadeIn 0.25s ease;
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+
+      h3 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        color: #64748b;
+        cursor: pointer;
+        padding: 4px;
+        margin: 0;
+
+        &:hover {
+          color: #0f172a;
+        }
+      }
+    }
+
+    .modal-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      .modal-row {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        label {
+          font-size: 0.775rem;
+          font-weight: 600;
+          color: #64748b;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+
+        .modal-value {
+          font-size: 0.95rem;
+          color: #0f172a;
+          word-break: break-all;
+          background: #f8fafc;
+          padding: 8px 12px;
+          border-radius: 6px;
+          border: 1px solid #e2e8f0;
+          font-family: ui-monospace, SFMono-Regular, monospace;
+        }
+      }
+    }
+
+    .modal-footer {
+      padding: 14px 24px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      background: #f8fafc;
+    }
+  }
+}

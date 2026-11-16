@@ -6,7 +6,7 @@ const Landing = () => {
     <div className="landing">
       <div className="left">
         <div className="logo">
-          <img src="logo.png" />
+          <img src="logo.png" alt="System Logo" />
         </div>
 
         <div className="title-large">Blockchain Based</div>
@@ -15,7 +15,15 @@ const Landing = () => {
 
         <div className="button-wrapper">
           <Link to="/login">
-            <button className="button-black">Login</button>
+            <button className="button-primary">
+              <i className="bi bi-box-arrow-in-right"></i> Voter Portal
+            </button>
+          </Link>
+
+          <Link to="/admin/login">
+            <button className="button-black">
+              <i className="bi bi-shield-lock"></i> Admin Portal
+            </button>
           </Link>
 
           <Link to="/view">
@@ -25,7 +33,7 @@ const Landing = () => {
       </div>
 
       <div className="right">
-        <img src="vote.gif" />
+        <img src="vote.gif" alt="Voting illustration" />
       </div>
     </div>
   );

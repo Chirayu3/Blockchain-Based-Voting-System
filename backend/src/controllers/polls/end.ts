@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import ElectionContract, { web3 } from "../../web3";
 import memoryCache from "memory-cache";
+import { Poll } from "../../entity/Poll";
 
 export default async (_: Request, res: Response) => {
   const accounts = await web3.eth.getAccounts();
@@ -8,9 +9,12 @@ export default async (_: Request, res: Response) => {
 
   const status = await instance.getStatus();
 
-  if (status !== "running") return res.status(400).send("election not started");
+  if (status !== "running") return res.status(400).send("Election not started");
 
   await instance.endElection({ from: accounts[0] });
+
+  // Update MySQL status
+  await Poll.update({ status: "running" }, { status: "finished" });
 
   const votes = await instance.getVotes();
 

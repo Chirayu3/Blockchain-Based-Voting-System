@@ -46,7 +46,7 @@ const User = () => {
         })
         .catch((err) => console.log(err));
     }
-  });
+  }, [voteState, authContext.id]);
 
   if (loading || voteState === "checking")
     return (

@@ -15,6 +15,9 @@ export class Candidate extends BaseEntity {
   @Column()
   name!: string;
 
-  @ManyToOne(() => Poll, (poll) => poll.candidates)
+  @Column({ type: "text", nullable: true })
+  info!: string;
+
+  @ManyToOne(() => Poll, (poll) => poll.candidates, { onDelete: "CASCADE" })
   poll!: Poll;
 }
