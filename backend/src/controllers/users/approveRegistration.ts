@@ -55,6 +55,10 @@ export default async (req: AuthenticatedRequest, res: Response) => {
     if (user.registrationStatus === RegistrationStatus.APPROVED && user.voterId) {
       wasAlreadyApproved = true;
       assignedVoterId = user.voterId;
+      if (!user.verified) {
+        user.verified = true;
+        await queryRunner.manager.save(user);
+      }
       approvedUser = user;
       await queryRunner.commitTransaction();
     } else {
@@ -78,6 +82,7 @@ export default async (req: AuthenticatedRequest, res: Response) => {
 
       user.voterId = assignedVoterId;
       user.registrationStatus = RegistrationStatus.APPROVED;
+      user.verified = true;
       user.registrationReviewedAt = new Date();
       user.reviewedBy = adminId || null;
       user.rejectionReason = null;

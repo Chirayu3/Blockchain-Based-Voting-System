@@ -87,7 +87,8 @@ export default async (req: AuthenticatedRequest, res: Response) => {
   if (!voter.emailVerified) {
     return res.status(403).send("Voter account email is not verified");
   }
-  if (!voter.verified) {
+  const isApproved = Boolean(voter.verified || voter.registrationStatus === "APPROVED");
+  if (!isApproved) {
     return res.status(403).send("Voter account has not received administrator approval");
   }
 

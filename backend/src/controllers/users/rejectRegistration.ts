@@ -75,6 +75,7 @@ export default async (req: AuthenticatedRequest, res: Response) => {
 
     // Retain voterId as null (do NOT generate or alter voterId)
     user.registrationStatus = RegistrationStatus.REJECTED;
+    user.verified = false;
     user.registrationReviewedAt = new Date();
     user.reviewedBy = adminId || null;
     user.rejectionReason = reason ? reason.trim() : null;

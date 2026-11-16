@@ -55,6 +55,7 @@ export default async (req: AuthenticatedRequest, res: Response) => {
 
     // Reopen application back to PENDING_APPROVAL
     user.registrationStatus = RegistrationStatus.PENDING_APPROVAL;
+    user.verified = false;
     user.registrationSubmittedAt = new Date(); // Start fresh 24h SLA review window
     user.registrationReviewedAt = null;
     user.reviewedBy = null;

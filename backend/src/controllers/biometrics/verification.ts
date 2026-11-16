@@ -52,7 +52,8 @@ export const requestVotingChallenge = async (
   if (!user.emailVerified) {
     return res.status(403).send("Email verification required");
   }
-  if (!user.verified) {
+  const isApproved = Boolean(user.verified || user.registrationStatus === "APPROVED");
+  if (!isApproved) {
     return res.status(403).send("Administrator approval required before voting");
   }
 

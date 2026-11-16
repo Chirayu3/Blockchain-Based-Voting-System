@@ -57,7 +57,12 @@ export const BiometricCaptureModal: React.FC<BiometricCaptureModalProps> = ({
   const formatErrorMessage = (err: any): string => {
     if (err?.response?.data) {
       const data = err.response.data;
-      if (typeof data === "string") return data;
+      if (typeof data === "string") {
+        if (data.includes("ECONNREFUSED") || data.includes("Unable to connect to biometric")) {
+          return "Biometric inference service is offline. Please ensure the Python service is running on port 8001.";
+        }
+        return data;
+      }
       if (Array.isArray(data)) return data.join(", ");
       if (data.error) {
         return typeof data.error === "string" ? data.error : JSON.stringify(data.error);
