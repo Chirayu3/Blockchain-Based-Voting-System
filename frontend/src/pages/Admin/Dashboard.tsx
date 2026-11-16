@@ -365,7 +365,7 @@ const Dashboard = (): JSX.Element => {
           <table>
             <thead>
               <tr>
-                <th>Voter</th>
+                <th>Voter ID</th>
                 <th>Election</th>
                 <th>Candidate</th>
                 <th>Tx Hash</th>
@@ -389,7 +389,7 @@ const Dashboard = (): JSX.Element => {
                       : act.transactionHash;
                   return (
                     <tr key={act.id}>
-                      <td style={{ fontWeight: 600 }}>{act.voterName}</td>
+                      <td style={{ fontWeight: 600 }}>ID: {act.voterId}</td>
                       <td>{act.electionName}</td>
                       <td style={{ fontWeight: 600, color: "#2563eb" }}>
                         {act.candidateName}
