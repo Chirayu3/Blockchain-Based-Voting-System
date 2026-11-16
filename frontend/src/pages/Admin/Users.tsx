@@ -45,13 +45,32 @@ const Users = () => {
     setUser(newList);
   };
 
-  if (users.length === 0) return <div></div>;
+  if (users.length === 0)
+    return (
+      <div className="users-wrapper">
+        <div className="empty-users-state">
+          <i className="bi bi-shield-check"></i>
+          <h3>All Voters Verified</h3>
+          <p>There are currently no pending voter registrations awaiting verification.</p>
+        </div>
+      </div>
+    );
 
   return (
     <div className="users-wrapper">
       {users.map((user, index) => (
         <div key={index} className="user-wrapper">
-          {user.name}
+          <div className="user-info">
+            <span className="user-avatar">
+              <i className="bi bi-person-badge"></i>
+            </span>
+            <div>
+              <div className="user-name">{user.name}</div>
+              {user.citizenshipNumber && (
+                <div className="user-meta">Citizen ID: {user.citizenshipNumber}</div>
+              )}
+            </div>
+          </div>
 
           <div>
             <button

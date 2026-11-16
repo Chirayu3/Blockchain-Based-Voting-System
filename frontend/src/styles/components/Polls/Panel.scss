@@ -1,14 +1,52 @@
 .polls-container {
-  @include box-shadow;
-  margin-top: 50px;
+  background: #ffffff;
+  border: 1px solid $theme-border;
+  @include box-shadow-elevated;
+  margin: 36px auto;
   text-align: center;
-  padding: 50px;
-  border-radius: 10px;
+  padding: 48px 40px;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   position: relative;
+  max-width: 960px;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 32px 18px;
+    margin: 20px auto;
+    border-radius: 14px;
+  }
+
+  & > .title-small {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: $theme-text;
+    letter-spacing: -0.02em;
+    margin-top: 12px;
+    margin-bottom: 8px;
+    display: block;
+
+    @media (max-width: 640px) {
+      font-size: 1.4rem;
+    }
+  }
+
+  & > .text-normal {
+    font-size: 1rem;
+    color: $theme-text-muted;
+    max-width: 640px;
+    margin: 0 auto 24px auto;
+    line-height: 1.6;
+    display: block;
+  }
 
   .votes-wrapper {
-    padding-top: 50px;
+    padding-top: 24px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 }

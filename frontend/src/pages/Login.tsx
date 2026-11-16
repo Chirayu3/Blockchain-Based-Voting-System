@@ -22,6 +22,9 @@ const Login = (props: RouteProps): JSX.Element => {
     <div>
       <LoginLayout error={error}>
         <div className="form-container">
+          <div className="form-title">Account Sign In</div>
+          <div className="form-subtitle">Enter your credentials to access the secure voting system</div>
+
           <Formik
             initialValues={{
               email: "",
@@ -45,10 +48,11 @@ const Login = (props: RouteProps): JSX.Element => {
             {({ errors, touched, getFieldProps, handleSubmit }) => (
               <form onSubmit={handleSubmit}>
                 <div className="input-container">
+                  <label htmlFor="email" className="input-label">Email Address</label>
                   <input
                     id="email"
                     type="email"
-                    placeholder="Email"
+                    placeholder="name@example.com"
                     {...getFieldProps("email")}
                   />
                   <div className="form-error-text">
@@ -57,10 +61,11 @@ const Login = (props: RouteProps): JSX.Element => {
                 </div>
 
                 <div className="input-container">
+                  <label htmlFor="password" className="input-label">Password</label>
                   <input
                     id="password"
                     type="password"
-                    placeholder="Password"
+                    placeholder="••••••••"
                     {...getFieldProps("password")}
                   />
                   <div className="form-error-text">

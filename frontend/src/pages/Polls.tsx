@@ -17,7 +17,13 @@ const Polls = () => {
       .catch((err) => console.log({ err }));
   }, []);
 
-  if (loading) return <div></div>;
+  if (loading)
+    return (
+      <div className="app-loading-screen">
+        <div className="app-spinner"></div>
+        <div className="app-loading-text">Loading Live Polls...</div>
+      </div>
+    );
 
   return (
     <Panel name={data.name} description={data.description}>

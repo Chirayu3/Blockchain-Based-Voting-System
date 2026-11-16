@@ -22,7 +22,13 @@ const Home = (props: RouteProps): JSX.Element => {
       .catch((error) => console.log({ error }));
   }, []);
 
-  if (loading) return <div></div>;
+  if (loading)
+    return (
+      <div className="app-loading-screen">
+        <div className="app-spinner"></div>
+        <div className="app-loading-text">Loading Election Status...</div>
+      </div>
+    );
 
   if (status === "finished") return <ResultPage />;
   if (status === "running") return <PollsPage />;

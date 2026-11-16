@@ -48,7 +48,13 @@ const User = () => {
     }
   });
 
-  if (loading || voteState === "checking") return <div></div>;
+  if (loading || voteState === "checking")
+    return (
+      <div className="app-loading-screen">
+        <div className="app-spinner"></div>
+        <div className="app-loading-text">Verifying Ballot Eligibility...</div>
+      </div>
+    );
 
   if (voteState === "not-started") return <Waiting />;
 

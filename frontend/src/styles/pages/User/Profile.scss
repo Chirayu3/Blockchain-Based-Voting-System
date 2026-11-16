@@ -1,34 +1,150 @@
 .profile-wrapper {
-  @include box-shadow;
-  padding: 50px;
+  background: #ffffff;
+  border: 1px solid $theme-border;
+  border-radius: 20px;
+  @include box-shadow-elevated;
+  padding: 48px 40px;
   display: grid;
-  border-radius: 10px;
   box-sizing: border-box;
-  grid-template-columns: 1fr 2fr;
-  column-gap: 100px;
+  grid-template-columns: 260px 1fr;
+  column-gap: 48px;
+  max-width: 900px;
+  width: 100%;
+  margin: 30px auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    row-gap: 36px;
+    padding: 30px 20px;
+  }
 
   .left-panel {
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-right: 24px;
+    border-right: 1px solid $theme-border;
+
+    @media (max-width: 768px) {
+      padding-right: 0;
+      padding-bottom: 28px;
+      border-right: none;
+      border-bottom: 1px solid $theme-border;
+    }
 
     .person-icon {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+      border: 2px solid rgba(37, 99, 235, 0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+      margin-bottom: 16px;
+
       * {
-        font-size: 4rem;
+        font-size: 3.5rem;
         color: $theme-primary;
+        line-height: 1;
       }
     }
 
     .username {
-      padding: 20px 0 20px 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: $theme-text;
+      padding: 0;
+      margin-bottom: 8px;
+    }
+
+    &::after {
+      content: "Verified Blockchain Voter";
+      display: inline-block;
+      font-size: 0.775rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #059669;
+      background: #ecfdf5;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      margin-bottom: 24px;
+    }
+
+    button {
+      width: 100%;
+      max-width: 180px;
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: #ffffff;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+      box-shadow: 0 1px 3px rgba(220, 38, 38, 0.08);
+
+      &:hover {
+        background: #fef2f2;
+        border-color: #f87171;
+        color: #b91c1c;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+      }
     }
   }
 
   .right-panel {
+    display: flex;
+    flex-direction: column;
+
+    & > .title-small {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: $theme-text;
+      padding-bottom: 16px;
+      border-bottom: 1px solid $theme-border;
+      display: block;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+
     .skeleton {
-      height: 30px;
-      width: 200px;
-      background: $theme-gray;
-      margin-top: 30px;
+      height: 48px;
+      width: 100%;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      margin-top: 12px;
       border-radius: 10px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+
+      &::after {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #475569;
+      }
+
+      &:nth-of-type(1)::after {
+        content: "Identity Credential: Authenticated & Cryptographically Bound";
+      }
+
+      &:nth-of-type(2)::after {
+        content: "Smart Contract Access: Authorized for Current Ballot Session";
+      }
+
+      &:nth-of-type(3)::after {
+        content: "Ledger Network: Ethereum Testnet Node Active";
+      }
+
+      &:nth-of-type(4)::after {
+        content: "Session Token: Active Encrypted JWT Bearer";
+      }
     }
   }
 }

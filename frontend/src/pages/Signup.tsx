@@ -25,6 +25,9 @@ const Signup = (): JSX.Element => {
     <div>
       <LoginLayout error={error} success={success}>
         <div className="form-container">
+          <div className="form-title">Create Voter Account</div>
+          <div className="form-subtitle">Register your identity to participate in cryptographic voting</div>
+
           <Formik
             initialValues={{
               name: "",
@@ -57,10 +60,11 @@ const Signup = (): JSX.Element => {
             {({ errors, touched, getFieldProps, handleSubmit }) => (
               <form onSubmit={handleSubmit}>
                 <div className="input-container">
+                  <label htmlFor="name" className="input-label">Full Name</label>
                   <input
                     id="name"
                     type="text"
-                    placeholder="Name"
+                    placeholder="e.g. John Doe"
                     {...getFieldProps("name")}
                   />
                   <div className="form-error-text">
@@ -69,10 +73,11 @@ const Signup = (): JSX.Element => {
                 </div>
 
                 <div className="input-container">
+                  <label htmlFor="citizenshipNumber" className="input-label">Citizenship / National ID Number</label>
                   <input
                     id="citizenshipNumber"
                     type="text"
-                    placeholder="Citizenship Number"
+                    placeholder="e.g. CIT-987654"
                     {...getFieldProps("citizenshipNumber")}
                   />
                   <div className="form-error-text">
@@ -83,10 +88,11 @@ const Signup = (): JSX.Element => {
                 </div>
 
                 <div className="input-container">
+                  <label htmlFor="email" className="input-label">Email Address</label>
                   <input
                     id="email"
                     type="email"
-                    placeholder="Email"
+                    placeholder="name@example.com"
                     {...getFieldProps("email")}
                   />
                   <div className="form-error-text">
@@ -95,10 +101,11 @@ const Signup = (): JSX.Element => {
                 </div>
 
                 <div className="input-container">
+                  <label htmlFor="password" className="input-label">Password</label>
                   <input
                     id="password"
                     type="password"
-                    placeholder="Password"
+                    placeholder="••••••••"
                     {...getFieldProps("password")}
                   />
                   <div className="form-error-text">
@@ -109,10 +116,11 @@ const Signup = (): JSX.Element => {
                 </div>
 
                 <div className="input-container">
+                  <label htmlFor="confirm" className="input-label">Confirm Password</label>
                   <input
                     id="confirm"
                     type="password"
-                    placeholder="Confirm Password"
+                    placeholder="••••••••"
                     {...getFieldProps("confirm")}
                   />
                   <div className="form-error-text">

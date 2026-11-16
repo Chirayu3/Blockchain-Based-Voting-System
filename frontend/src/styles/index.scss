@@ -1,14 +1,43 @@
-@import url("https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 @import "~bootstrap-icons/font/bootstrap-icons.css";
 
-$theme-gray: #f6f6f6;
-$theme-black: #333333;
-$theme-primary: #4daaa7;
-$theme-secondary: #3f8f8b;
+// Modern Fintech / Web3 Design Palette
+$theme-primary: #2563eb;
+$theme-primary-hover: #1d4ed8;
+$theme-primary-light: #eff6ff;
+$theme-secondary: #4f46e5;
+$theme-secondary-hover: #4338ca;
+$theme-accent: #0ea5e9;
+$theme-dark: #0f172a;
+$theme-dark-surface: #1e293b;
+$theme-black: #0f172a;
+$theme-gray: #f8fafc;
+$theme-gray-alt: #f1f5f9;
+$theme-border: #e2e8f0;
+$theme-border-dark: #334155;
+$theme-text: #0f172a;
+$theme-text-muted: #64748b;
+$theme-text-subtle: #94a3b8;
+$theme-success: #10b981;
+$theme-success-bg: #ecfdf5;
+$theme-danger: #ef4444;
+$theme-danger-bg: #fef2f2;
+$theme-warning: #f59e0b;
 
 @mixin box-shadow {
-  box-shadow: 2px 2px 10px rgba(50, 50, 50, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+}
+
+@mixin box-shadow-elevated {
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+}
+
+@mixin box-shadow-primary {
+  box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.28);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body,
@@ -16,82 +45,294 @@ html {
   position: relative;
   margin: 0;
   padding: 0;
-  // font-family: "Inter", sans-serif;
-  font-family: "Josefin Sans", sans-serif;
+  font-family: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: $theme-black;
+  color: $theme-text;
+  background-color: #f8fafc;
+  min-height: 100vh;
+  line-height: 1.5;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.875em;
 }
 
 button {
-  border: none;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 0.95rem;
+  border: 1px solid transparent;
   outline: none;
-  border-radius: 5px;
-  padding: 10px;
-  margin-right: 5px;
+  border-radius: 8px;
+  padding: 10px 20px;
+  margin-right: 8px;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 0.01em;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+  }
 }
 
 .button-black {
-  background-color: $theme-black;
-  color: white;
+  background-color: $theme-dark;
+  color: #ffffff;
+  border-color: $theme-dark;
+
+  &:hover {
+    background-color: $theme-dark-surface;
+    border-color: $theme-dark-surface;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+  }
 }
+
 .button-primary {
-  background-color: $theme-primary;
-  color: white;
+  background: linear-gradient(135deg, $theme-primary 0%, #1d4ed8 100%);
+  color: #ffffff;
+  border-color: transparent;
+  @include box-shadow-primary;
+
+  &:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    box-shadow: 0 6px 18px 0 rgba(37, 99, 235, 0.38);
+  }
 }
 
 .button-secondary {
-  background-color: $theme-secondary;
-  color: white;
-}
+  background: linear-gradient(135deg, $theme-secondary 0%, #3730a3 100%);
+  color: #ffffff;
+  border-color: transparent;
 
-button,
-.title-large,
-.title-small {
-  text-transform: uppercase;
+  &:hover {
+    background: linear-gradient(135deg, #4338ca 0%, #312e81 100%);
+    box-shadow: 0 6px 18px 0 rgba(79, 70, 229, 0.35);
+  }
 }
 
 .title-large {
-  font-size: 2.8rem;
-  font-weight: 900;
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  color: $theme-text;
+
+  @media (max-width: 768px) {
+    font-size: 1.85rem;
+  }
 }
 
 .title-small {
-  font-size: 1.6rem;
-  font-weight: 300;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: $theme-text;
+  line-height: 1.4;
 }
 
 .text-normal {
-  font-weight: 300;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: $theme-text-muted;
+  line-height: 1.6;
 }
 
 .success-message,
 .error-message {
   box-sizing: border-box;
-  width: 400px;
-  padding: 20px 30px 20px 30px;
+  width: 100%;
+  max-width: 440px;
+  padding: 14px 18px;
   border-radius: 10px;
-  margin-bottom: 50px;
-  color: white;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease;
 
   span {
-    margin-right: 10px;
+    display: inline-flex;
+    align-items: center;
+
+    &:first-child {
+      margin-right: 10px;
+      font-size: 1.2rem;
+    }
   }
 }
 
 .success-message {
-  background-color: $theme-primary;
+  background-color: $theme-success-bg;
+  color: #065f46;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+
+  span:first-child {
+    color: $theme-success;
+  }
 }
 
 .error-message {
-  background-color: red;
+  background-color: $theme-danger-bg;
+  color: #991b1b;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+
+  span:first-child {
+    color: $theme-danger;
+  }
+}
+
+.app-loading-screen {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  background-color: #f8fafc;
+
+  .app-spinner {
+    width: 44px;
+    height: 44px;
+    border: 3px solid #e2e8f0;
+    border-top-color: $theme-primary;
+    border-radius: 50%;
+    animation: rotate360 0.8s linear infinite;
+  }
+
+  .app-loading-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: $theme-text-muted;
+    letter-spacing: 0.02em;
+  }
+}
+
+.top-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  background: #ffffff;
+  border-bottom: 1px solid $theme-border;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+
+  .navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      background: $theme-primary;
+      border-radius: 50%;
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+      color: $theme-text;
+    }
+  }
+
+  .navbar-center {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #475569;
+    background: #f1f5f9;
+    padding: 4px 12px;
+    border-radius: 9999px;
+  }
+
+  .navbar-profile {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $theme-text;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #f1f5f9;
+      color: $theme-primary;
+    }
+  }
+}
+
+.app-footer {
+  border-top: 1px solid $theme-border;
+  background-color: #ffffff;
+  padding: 32px 20px 24px 20px;
+  text-align: center;
+  margin-top: auto;
+  font-size: 0.875rem;
+  color: $theme-text-muted;
+
+  .footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .footer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.775rem;
+    font-weight: 600;
+    color: #475569;
+    background: #f1f5f9;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+
+    &::before {
+      content: "🔒";
+      font-size: 0.75rem;
+    }
+  }
+
+  .footer-copyright {
+    color: #64748b;
+    font-size: 0.85rem;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @import "./layouts/Boxes.scss";

@@ -10,10 +10,16 @@ const NavbarContainer = (props: NavbarContainerProps) => {
   const navigate = useNavigate();
 
   return (
-    <nav>
-      <span>LOGO</span>
-      {props.children}
-      <span onClick={() => navigate("/profile")}>profile</span>
+    <nav className="top-navbar">
+      <div className="navbar-brand">
+        <span className="brand-dot"></span>
+        <span className="brand-title">BBVS</span>
+      </div>
+      <div className="navbar-center">{props.children}</div>
+      <div className="navbar-profile" onClick={() => navigate("/profile")}>
+        <i className="bi bi-person-circle"></i>
+        <span>Profile</span>
+      </div>
     </nav>
   );
 };

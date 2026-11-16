@@ -2,11 +2,15 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <footer
-      style={{ paddingBottom: 20, paddingTop: 50, textAlign: "center" }}
-      className="text-normal"
-    >
-      <div>Copyright © 2022 BBVS. All rights reserved.</div>
+    <footer className="app-footer">
+      <div className="footer-inner">
+        <div className="footer-badge">
+          Decentralized E-Voting Protocol • Secured by Ethereum Smart Contracts
+        </div>
+        <div className="footer-copyright">
+          All rights reserved.
+        </div>
+      </div>
     </footer>
   );
 };

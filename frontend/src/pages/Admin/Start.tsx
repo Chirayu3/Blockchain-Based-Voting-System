@@ -74,10 +74,11 @@ const Start = () => {
         {({ errors, touched, getFieldProps, handleSubmit }) => (
           <form onSubmit={handleSubmit}>
             <div className="input-container">
+              <label htmlFor="name" className="input-label">Election Title</label>
               <input
                 id="name"
                 type="text"
-                placeholder="Poll Name"
+                placeholder="e.g. 2026 Presidential Election"
                 {...getFieldProps("name")}
               />
 
@@ -87,10 +88,11 @@ const Start = () => {
             </div>
 
             <div className="input-container">
+              <label htmlFor="description" className="input-label">Election Description</label>
               <input
                 id="description"
                 type="text"
-                placeholder="Poll Description"
+                placeholder="Briefly describe the purpose of this election..."
                 {...getFieldProps("description")}
               />
 
@@ -124,10 +126,11 @@ const Start = () => {
             ) : null}
 
             <div className="input-container">
+              <label className="input-label">Add Candidate Name & Statement</label>
               <div className="add-candidate-wrapper">
                 <input
                   type="text"
-                  placeholder="Add Candidate"
+                  placeholder="Candidate Full Name"
                   ref={candidateField}
                   onChange={(e) => {
                     setName(e.target.value);
@@ -146,7 +149,7 @@ const Start = () => {
                       candidateInfoField.current.value = "";
                   }}
                 >
-                  Add
+                  Add Candidate
                 </button>
               </div>
             </div>
@@ -155,7 +158,7 @@ const Start = () => {
               <div className="add-candidate-wrapper">
                 <input
                   type="text"
-                  placeholder="Candidate Info"
+                  placeholder="Candidate Manifesto / Bio (min 10 characters)"
                   ref={candidateInfoField}
                   onChange={(e) => {
                     setInfo(e.target.value);

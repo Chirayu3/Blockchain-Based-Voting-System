@@ -1,34 +1,79 @@
-@keyframes blink {
+@keyframes radarPulse {
   0% {
-    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
   }
-
-  50% {
-    opacity: 0;
+  70% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
   }
-
   100% {
-    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
   }
 }
 
 .vote-status-wrapper {
   position: absolute;
-  left: 20px;
-  top: 20px;
+  left: 28px;
+  top: 28px;
+  z-index: 10;
+
+  @media (max-width: 640px) {
+    position: static;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+  }
 
   .running {
-    width: 20px;
-    height: 20px;
-    background-color: $theme-primary;
-    border-radius: 100px;
-    animation: blink 1s linear infinite;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background-color: #ecfdf5;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: #065f46;
+    text-transform: uppercase;
+
+    &::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      background-color: #10b981;
+      border-radius: 50%;
+      animation: radarPulse 1.8s infinite;
+    }
+
+    &::after {
+      content: "Polls Active";
+    }
   }
 
   .finished {
-    display: flex;
-    justify-content: center;
+    display: inline-flex;
     align-items: center;
-    color: $theme-primary;
+    gap: 6px;
+    padding: 6px 14px;
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 9999px;
+    color: #475569;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    i {
+      color: #64748b;
+      font-size: 1rem;
+    }
+
+    .text-normal {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: inherit;
+    }
   }
 }

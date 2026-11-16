@@ -9,17 +9,53 @@
 
 .waiting-wrapper {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  background: #ffffff;
+  border: 1px solid $theme-border;
+  border-radius: 16px;
+  padding: 56px 36px;
+  max-width: 540px;
+  width: 100%;
+  margin: 60px auto;
+  text-align: center;
+  @include box-shadow-elevated;
 
   .cog {
-    animation: rotate360 3s linear infinite;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: #eff6ff;
+    border: 1px solid rgba(37, 99, 235, 0.15);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
 
-    * {
-      font-size: 20rem;
+    i {
+      font-size: 2.75rem;
       color: $theme-primary;
-      padding-top: 18px;
-      margin: 0;
+      animation: rotate360 8s linear infinite;
+      display: inline-block;
+      line-height: 1;
     }
+  }
+
+  .title-small {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: $theme-text;
+    margin-bottom: 8px;
+  }
+
+  &::after {
+    content: "The election smart contract has not been started yet. Please check back when voting is initiated.";
+    font-size: 0.9rem;
+    color: $theme-text-muted;
+    max-width: 380px;
+    line-height: 1.5;
   }
 }

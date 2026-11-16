@@ -1,6 +1,17 @@
 .view-container {
-  padding: 100px 100px 0 100px;
-  margin-left: 50px;
-  margin-right: 50px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 24px 60px 24px;
   position: relative;
+  min-height: 80vh;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 20px 14px 40px 14px;
+  }
+
+  & > div:last-child {
+    width: 100%;
+    margin-top: 20px;
+  }
 }

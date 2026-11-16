@@ -16,7 +16,13 @@ export default () => {
   const authContext = useContext(AuthContext);
 
   const getRoutes = (): JSX.Element => {
-    if (authContext.loading) return <div>loading...</div>;
+    if (authContext.loading)
+      return (
+        <div className="app-loading-screen">
+          <div className="app-spinner"></div>
+          <div className="app-loading-text">Connecting to Blockchain Network...</div>
+        </div>
+      );
 
     if (authContext.authenticated) {
       // if the user is authenticated then

@@ -25,7 +25,12 @@ const View = (props: RouteProps): JSX.Element => {
       .catch((error) => console.log({ error }));
   }, []);
 
-  let comp = <div></div>;
+  let comp = (
+    <div className="app-loading-screen">
+      <div className="app-spinner"></div>
+      <div className="app-loading-text">Fetching Live Ballot Ledger...</div>
+    </div>
+  );
 
   if (loading) return comp;
 
