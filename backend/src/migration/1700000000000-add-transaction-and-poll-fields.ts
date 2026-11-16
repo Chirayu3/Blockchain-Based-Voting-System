@@ -16,7 +16,7 @@ export class addTransactionAndPollFields1700000000000
     const hasStatus = await queryRunner.hasColumn("poll", "status");
     if (!hasStatus) {
       await queryRunner.query(
-        "ALTER TABLE `poll` ADD `status` varchar(50) NOT NULL DEFAULT 'running'"
+        "ALTER TABLE `poll` ADD `status` varchar(50) NOT NULL DEFAULT 'not-started'"
       );
     }
 

@@ -7,49 +7,50 @@ import dayjs from "dayjs";
 
 const schema = yup.object({
   body: yup.object({
-    email: yup.string().email().required(),
-    password: yup.string().min(3).required(),
+    email: yup.string().email().required("Email is required"),
+    password: yup.string().required("Password is required"),
     portal: yup.string().oneOf(["admin", "voter"]).optional(),
   }),
 });
 
 export default async (req: Request, res: Response) => {
-  let user: User | undefined;
-
   try {
     await schema.validate(req);
   } catch (error: any) {
     return res.status(400).send(error.errors);
   }
 
-  try {
-    user = await User.findOneOrFail({ email: req.body.email });
-  } catch (error: any) {
-    return res.status(404).send("User with this email not found");
+  const { email, password, portal } = req.body;
+  const user = await User.findOne({ where: { email: email.toLowerCase().trim() } });
+
+  if (!user) {
+    return res.status(401).send("Invalid email or password.");
   }
 
-  const portal = req.body.portal;
+  // Voter redirect instruction: Normal voters must authenticate through Voter ID + OTP flow
+  if (portal === "voter" || !user.admin) {
+    return res
+      .status(403)
+      .send("Voters must log in using their Voter ID and email verification code via the Voter Portal.");
+  }
 
-  if (portal === "admin" && !user.admin) {
+  // Administrator privilege check
+  if (!user.admin) {
     return res
       .status(403)
       .send("Access denied. Administrator privileges required.");
   }
 
-  if (portal === "voter" && user.admin) {
+  if (!user.isActive) {
     return res
       .status(403)
-      .send("Administrators must log in through the Admin Portal.");
+      .send("Account has been deactivated. Please contact the system administrator.");
   }
 
-  if (!user.verified) {
-    return res
-      .status(403)
-      .send("Your account is pending administrator verification.");
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) {
+    return res.status(401).send("Invalid email or password.");
   }
-
-  const match = await bcrypt.compare(req.body.password, user.password);
-  if (!match) return res.status(400).send("Password does not match");
 
   const accessTokenSecret =
     process.env.ACCESS_TOKEN_SECRET ||
@@ -63,8 +64,11 @@ export default async (req: Request, res: Response) => {
     name: user.name,
     citizenshipNumber: user.citizenshipNumber,
     email: user.email,
-    admin: user.admin,
-    verified: user.verified,
+    voterId: user.voterId,
+    admin: true,
+    verified: Boolean(user.verified),
+    emailVerified: Boolean(user.emailVerified),
+    isActive: Boolean(user.isActive),
   };
 
   const accessToken = jwt.sign(plainUserObject, accessTokenSecret, {
@@ -75,7 +79,9 @@ export default async (req: Request, res: Response) => {
   });
 
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: false,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     expires: dayjs().add(7, "days").toDate(),
   });
 

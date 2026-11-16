@@ -7,8 +7,11 @@ export interface AuthenticatedRequest extends Request {
     id: number;
     name: string;
     email: string;
+    voterId: string;
     admin: boolean;
     verified: boolean;
+    emailVerified: boolean;
+    isActive: boolean;
   };
 }
 
@@ -32,14 +35,15 @@ export const authenticateToken = async (
 
   try {
     const secret = isRefreshToken
-      ? process.env.REFRESH_TOKEN_SECRET || "5f567afa6406225c4a759daae77e07146eca5df8149353a844fa9ab67fba22780cb4baa5ea508214934531a6f35e67e96f16a0328559111c597856c660f177c2"
-      : process.env.ACCESS_TOKEN_SECRET || "976a66a5bd23b2050019f380c4decbbefdf8ff91cf502c68a3fe1ced91d7448cc54ce6c847657d53294e40889cef5bd996ec5b0fefc1f56270e06990657eeb6e";
+      ? process.env.REFRESH_TOKEN_SECRET ||
+        "5f567afa6406225c4a759daae77e07146eca5df8149353a844fa9ab67fba22780cb4baa5ea508214934531a6f35e67e96f16a0328559111c597856c660f177c2"
+      : process.env.ACCESS_TOKEN_SECRET ||
+        "976a66a5bd23b2050019f380c4decbbefdf8ff91cf502c68a3fe1ced91d7448cc54ce6c847657d53294e40889cef5bd996ec5b0fefc1f56270e06990657eeb6e";
 
     let decoded: any;
     try {
       decoded = jwt.verify(token, secret);
     } catch (verifyErr) {
-      // If access token expired, try refreshToken cookie
       if (!isRefreshToken && req.cookies && req.cookies.refreshToken) {
         const refreshSecret =
           process.env.REFRESH_TOKEN_SECRET ||
@@ -50,18 +54,26 @@ export const authenticateToken = async (
       }
     }
 
-    // Verify user still exists in database and get fresh verified/admin status
     const dbUser = await User.findOne({ where: { id: decoded.id } });
     if (!dbUser) {
-      return res.status(401).send("User not found");
+      return res.status(401).send("User account not found");
+    }
+
+    if (!dbUser.isActive) {
+      return res
+        .status(403)
+        .send("Your account has been deactivated. Please contact an administrator.");
     }
 
     req.user = {
       id: dbUser.id,
       name: dbUser.name,
       email: dbUser.email,
+      voterId: dbUser.voterId,
       admin: Boolean(dbUser.admin),
       verified: Boolean(dbUser.verified),
+      emailVerified: Boolean(dbUser.emailVerified),
+      isActive: Boolean(dbUser.isActive),
     };
 
     next();
@@ -77,7 +89,9 @@ export const requireAdmin = async (
 ) => {
   await authenticateToken(req, res, () => {
     if (!req.user || !req.user.admin) {
-      return res.status(403).send("Access denied: Administrator privileges required");
+      return res
+        .status(403)
+        .send("Access denied: Administrator privileges required");
     }
     next();
   });
@@ -92,8 +106,20 @@ export const requireVerifiedVoter = async (
     if (!req.user) {
       return res.status(401).send("Authentication required");
     }
-    if (!req.user.verified) {
-      return res.status(403).send("Your account is pending administrator verification");
+    if (req.user.admin) {
+      return res
+        .status(403)
+        .send("Access denied: Administrators cannot participate as voters.");
+    }
+    if (!req.user.isActive) {
+      return res
+        .status(403)
+        .send("Your voter account has been deactivated.");
+    }
+    if (!req.user.emailVerified) {
+      return res
+        .status(403)
+        .send("Email verification is required before casting ballots. Please sign in with OTP.");
     }
     next();
   });

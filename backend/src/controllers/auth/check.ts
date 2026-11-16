@@ -6,7 +6,7 @@ import { User } from "../../entity/User";
 export default async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken;
 
-  if (!refreshToken) return res.status(400).send("not authenticated");
+  if (!refreshToken) return res.status(401).send("Authentication required");
 
   try {
     const accessTokenSecret =
@@ -19,15 +19,26 @@ export default async (req: Request, res: Response) => {
     const decoded: any = jwt.verify(refreshToken, refreshTokenSecret);
 
     const dbUser = await User.findOne({ where: { id: decoded.id } });
-    if (!dbUser) return res.status(401).send("User not found");
+    if (!dbUser) {
+      res.clearCookie("refreshToken");
+      return res.status(401).send("User account not found");
+    }
+
+    if (!dbUser.isActive) {
+      res.clearCookie("refreshToken");
+      return res.status(403).send("Account deactivated");
+    }
 
     const userPlainObj = {
       id: dbUser.id,
       name: dbUser.name,
       citizenshipNumber: dbUser.citizenshipNumber,
       email: dbUser.email,
+      voterId: dbUser.voterId,
       admin: Boolean(dbUser.admin),
       verified: Boolean(dbUser.verified),
+      emailVerified: Boolean(dbUser.emailVerified),
+      isActive: Boolean(dbUser.isActive),
     };
 
     const accessToken = jwt.sign(userPlainObj, accessTokenSecret, {
@@ -39,11 +50,15 @@ export default async (req: Request, res: Response) => {
     });
 
     res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       expires: dayjs().add(7, "days").toDate(),
     });
 
     return res.status(200).send({ user: userPlainObj, accessToken });
   } catch (error) {
-    return res.status(400).send(error);
+    res.clearCookie("refreshToken");
+    return res.status(401).send("Invalid or expired session");
   }
 };

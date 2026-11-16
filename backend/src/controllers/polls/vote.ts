@@ -60,8 +60,11 @@ export default async (req: AuthenticatedRequest, res: Response) => {
   if (!voter) {
     return res.status(404).send("Voter not found");
   }
-  if (!voter.verified) {
-    return res.status(403).send("Voter account is not verified by admin");
+  if (!voter.isActive) {
+    return res.status(403).send("Voter account is deactivated");
+  }
+  if (!voter.emailVerified) {
+    return res.status(403).send("Voter account email is not verified");
   }
 
   const accounts = await web3.eth.getAccounts();
