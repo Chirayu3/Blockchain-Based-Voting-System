@@ -37,6 +37,11 @@ router.post("/start", requireAdmin, asyncHandler(startController));
 router.post("/end", requireAdmin, asyncHandler(endController));
 router.post("/reset", requireAdmin, asyncHandler(resetController));
 router.get("/admin/stats", requireAdmin, asyncHandler(statsController));
+router.get(
+  "/admin/election/:id",
+  requireAdmin,
+  asyncHandler(singleElectionController)
+);
 router.get("/admin/transactions", requireAdmin, asyncHandler(getAllTransactions));
 router.get("/export-csv", requireAdmin, asyncHandler(exportCsvController));
 router.get("/export-csv/:id", requireAdmin, asyncHandler(exportCsvController));
