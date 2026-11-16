@@ -7,17 +7,37 @@ import endController from "../controllers/polls/end";
 import resetController from "../controllers/polls/reset";
 import votesController from "../controllers/polls/votes";
 import voteController, { checkVoteability } from "../controllers/polls/vote";
+import statsController from "../controllers/polls/stats";
+import {
+  getAllTransactions,
+  getVoterHistory,
+} from "../controllers/polls/transactions";
+import exportCsvController from "../controllers/polls/export-csv";
+import {
+  authenticateToken,
+  requireAdmin,
+  requireVerifiedVoter,
+} from "../middlewares/auth";
 
 const router = express.Router();
 
+// Public / general poll routes
 router.get("/", fetchController);
 router.get("/status", statusController);
 router.get("/votes", votesController);
-
-router.post("/start", startController);
-router.post("/end", endController);
-router.post("/reset", resetController);
 router.post("/check-voteability", checkVoteability);
-router.post("/vote", voteController);
+
+// Voter actions (Requires verified voter)
+router.post("/vote", requireVerifiedVoter, voteController);
+router.get("/voter/history", authenticateToken, getVoterHistory);
+
+// Admin-only routes (Requires admin authorization)
+router.post("/start", requireAdmin, startController);
+router.post("/end", requireAdmin, endController);
+router.post("/reset", requireAdmin, resetController);
+router.get("/admin/stats", requireAdmin, statsController);
+router.get("/admin/transactions", requireAdmin, getAllTransactions);
+router.get("/export-csv", requireAdmin, exportCsvController);
+router.get("/export-csv/:id", requireAdmin, exportCsvController);
 
 export default router;
