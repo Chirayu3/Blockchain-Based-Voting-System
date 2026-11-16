@@ -51,14 +51,6 @@ export const requestEnrollmentChallenge = async (
       .send("Email ownership must be verified via OTP prior to biometric enrollment.");
   }
 
-  if (!user.verified) {
-    return res
-      .status(403)
-      .send(
-        "Administrator identity approval is required before biometric face enrollment can be performed. Please contact an election administrator to review your registration."
-      );
-  }
-
   rateLimiter.hit(rateKey);
 
   const challengeId = crypto.randomUUID();
@@ -189,11 +181,11 @@ export const verifyEnrollment = async (
     const user = await queryRunner.manager.findOne(User, {
       where: { id: req.user.id },
     });
-    if (!user || !user.isActive || !user.emailVerified || !user.verified) {
+    if (!user || !user.isActive || !user.emailVerified) {
       await queryRunner.rollbackTransaction();
       return res
         .status(403)
-        .send("Account is not eligible for face enrollment: administrator approval required.");
+        .send("Account is not eligible for face enrollment: active account and email verification required.");
     }
 
     let parsedInstructions: string[];

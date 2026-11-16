@@ -247,9 +247,31 @@ const Profile = (props: RouteProps) => {
             </div>
 
             <div style={{ fontSize: "0.8rem", color: "#64748b", marginTop: 8, lineHeight: 1.4 }}>
-              Biometric face recognition and presentation attack detection (PAD) are required to cast
-              cryptographic ballots. Templates are encrypted with authenticated AES-256-GCM.
+              Register your face to prepare for secure voting. Templates are encrypted with authenticated AES-256-GCM.
             </div>
+
+            {/* Informational Message about decoupled enrollment vs voting */}
+            {!authContext.verified && (
+              <div
+                style={{
+                  marginTop: 10,
+                  background: "#f0f9ff",
+                  border: "1px solid #bae6fd",
+                  borderRadius: 6,
+                  padding: "8px 12px",
+                  fontSize: "0.8rem",
+                  color: "#0369a1",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <i className="bi bi-info-circle-fill"></i>
+                <span>
+                  Your biometric enrollment can be completed independently. Casting a vote will become available after administrator approval and successful biometric verification.
+                </span>
+              </div>
+            )}
 
             {bioStatus.hasEnrolled && (
               <div
@@ -281,19 +303,19 @@ const Profile = (props: RouteProps) => {
 
             {/* Actions */}
             <div style={{ marginTop: 16, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-              {!authContext.verified ? (
+              {!authContext.emailVerified ? (
                 <div
                   style={{
-                    background: "#fffbeb",
-                    border: "1px solid #fef3c7",
+                    background: "#fef2f2",
+                    border: "1px solid #fee2e2",
                     borderRadius: 6,
                     padding: "8px 12px",
                     fontSize: "0.8rem",
-                    color: "#92400e",
+                    color: "#991b1b",
                   }}
                 >
-                  <i className="bi bi-info-circle" style={{ marginRight: 6 }}></i>
-                  Administrator approval is required before you can enroll your facial biometrics.
+                  <i className="bi bi-exclamation-circle" style={{ marginRight: 6 }}></i>
+                  Please verify your email address via OTP before biometric enrollment.
                 </div>
               ) : (
                 <>
@@ -304,7 +326,7 @@ const Profile = (props: RouteProps) => {
                     style={{ fontSize: "0.85rem", padding: "8px 16px" }}
                   >
                     <i className="bi bi-person-bounding-box" style={{ marginRight: 6 }}></i>
-                    {bioStatus.hasEnrolled ? "Re-enroll Face Biometrics" : "Enroll Face Biometrics"}
+                    {bioStatus.hasEnrolled ? "Re-enroll Face Biometrics" : "Enroll Face"}
                   </button>
 
                   {bioStatus.hasEnrolled && (

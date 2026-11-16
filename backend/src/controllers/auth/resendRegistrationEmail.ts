@@ -61,7 +61,7 @@ export default async (req: Request, res: Response) => {
 
   if (user) {
     if (user.voterId) {
-      await EmailService.sendRegistrationApprovalEmail({
+      await EmailService.sendRegistrationEmail({
         userId: user.id,
         to: user.email,
         name: user.name,

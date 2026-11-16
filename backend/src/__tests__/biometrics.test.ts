@@ -145,14 +145,120 @@ describe("Biometric Facial Registration & Blockchain Voting Authentication Test 
     }
   });
 
-  // 1. Enrollment Prerequisite: Admin Approval is strictly required
-  test("1. Enrollment rejected if voter has not received administrator approval (verified = false)", async () => {
+  // 1. Enrollment Allowed for Active + Email Verified Voter Even When Admin Approval is Pending
+  test("1. Active + email verified voter with pending admin approval can successfully request enrollment challenge", async () => {
     const res = await request(app)
       .post("/auth/biometrics/enrollment/challenge")
       .set("Authorization", `Bearer ${unapprovedVoterToken}`);
 
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.challengeId).toBeDefined();
+    expect(res.body.instructions).toBeInstanceOf(Array);
+  });
+
+  test("1b. Enrollment rejected if email is not verified", async () => {
+    const unverifiedEmailUser = new User();
+    unverifiedEmailUser.voterId = `VOTER-NOEMAIL-${Date.now()}`;
+    unverifiedEmailUser.name = "No Email Voter";
+    unverifiedEmailUser.email = `noemail_${Date.now()}@example.com`;
+    unverifiedEmailUser.password = "hashed_pass";
+    unverifiedEmailUser.citizenshipNumber = `CIT_NOEM_${Date.now()}`;
+    unverifiedEmailUser.admin = false;
+    unverifiedEmailUser.verified = false;
+    unverifiedEmailUser.emailVerified = false;
+    unverifiedEmailUser.isActive = true;
+    await unverifiedEmailUser.save();
+
+    const token = jwt.sign(
+      { id: unverifiedEmailUser.id, voterId: unverifiedEmailUser.voterId, admin: false, email: unverifiedEmailUser.email },
+      accessTokenSecret,
+      { expiresIn: "1h" }
+    );
+
+    const res = await request(app)
+      .post("/auth/biometrics/enrollment/challenge")
+      .set("Authorization", `Bearer ${token}`);
+
     expect(res.status).toBe(403);
-    expect(res.text).toContain("Administrator identity approval is required");
+    expect(res.text).toContain("Email ownership must be verified");
+  });
+
+  test("1c. Enrollment rejected if account is deactivated", async () => {
+    const inactiveUser = new User();
+    inactiveUser.voterId = `VOTER-INACTIVE-${Date.now()}`;
+    inactiveUser.name = "Inactive Voter";
+    inactiveUser.email = `inactive_${Date.now()}@example.com`;
+    inactiveUser.password = "hashed_pass";
+    inactiveUser.citizenshipNumber = `CIT_INACT_${Date.now()}`;
+    inactiveUser.admin = false;
+    inactiveUser.verified = true;
+    inactiveUser.emailVerified = true;
+    inactiveUser.isActive = false;
+    await inactiveUser.save();
+
+    const token = jwt.sign(
+      { id: inactiveUser.id, voterId: inactiveUser.voterId, admin: false, email: inactiveUser.email },
+      accessTokenSecret,
+      { expiresIn: "1h" }
+    );
+
+    const res = await request(app)
+      .post("/auth/biometrics/enrollment/challenge")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).toBe(403);
+    expect(res.text.toLowerCase()).toContain("deactivated");
+  });
+
+  test("1d. Missing challengeId in verification payload is rejected with clear error", async () => {
+    const res = await request(app)
+      .post("/auth/biometrics/enrollment/verify")
+      .set("Authorization", `Bearer ${approvedVoterToken}`)
+      .send({
+        frames: ["data:image/jpeg;base64,mock1", "data:image/jpeg;base64,mock2"],
+        consentGiven: true,
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.text).toContain("Challenge ID is required");
+  });
+
+  test("1e. Empty challengeId in verification payload is rejected", async () => {
+    const res = await request(app)
+      .post("/auth/biometrics/enrollment/verify")
+      .set("Authorization", `Bearer ${approvedVoterToken}`)
+      .send({
+        challengeId: "   ",
+        frames: ["data:image/jpeg;base64,mock1", "data:image/jpeg;base64,mock2"],
+        consentGiven: true,
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.text).toContain("Challenge ID is required");
+  });
+
+  test("1f. Missing consent in enrollment verification is rejected", async () => {
+    const res = await request(app)
+      .post("/auth/biometrics/enrollment/verify")
+      .set("Authorization", `Bearer ${approvedVoterToken}`)
+      .send({
+        challengeId: "00000000-0000-0000-0000-000000000000",
+        frames: ["data:image/jpeg;base64,mock1", "data:image/jpeg;base64,mock2"],
+        consentGiven: false,
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.text).toContain("Biometric processing consent is required");
+  });
+
+  test("1g. Voting challenge is rejected for voter with pending admin approval", async () => {
+    const res = await request(app)
+      .post(`/polls/${runningPoll.id}/biometric/challenge`)
+      .set("Authorization", `Bearer ${unapprovedVoterToken}`);
+
+    expect(res.status).toBe(403);
+    expect(res.text).toContain("Administrator approval required before voting");
   });
 
   // 2. Enrollment challenge generation for approved voter
