@@ -8,6 +8,7 @@ import resetController from "../controllers/polls/reset";
 import votesController from "../controllers/polls/votes";
 import voteController, { checkVoteability } from "../controllers/polls/vote";
 import statsController from "../controllers/polls/stats";
+import singleElectionController from "../controllers/polls/single-election";
 import {
   getAllTransactions,
   getVoterHistory,
