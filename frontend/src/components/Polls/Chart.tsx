@@ -1,61 +1,78 @@
 import React, { useState } from "react";
 import axios from "../../axios";
+import { BiometricCaptureModal } from "../Biometrics/BiometricCaptureModal";
 
 interface ChartProps {
   votes: any;
   enableVote?: boolean;
   userId?: number;
   userName?: string;
+  electionId?: number;
 }
 
 const Chart = (props: ChartProps) => {
   const votes = props.votes;
   const [submitting, setSubmitting] = useState<string>("");
+  const [selectedCandidate, setSelectedCandidate] = useState<string>("");
+  const [bioModalOpen, setBioModalOpen] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [successTx, setSuccessTx] = useState<any>(null);
 
+  const handleVoteInitiation = (candidate: string) => {
+    setError("");
+    setSelectedCandidate(candidate);
+    setBioModalOpen(true);
+  };
+
+  const handleBiometricSuccess = (resultData: any) => {
+    const token = resultData.votingAuthorizationToken;
+    if (!token) {
+      setError("Biometric verification succeeded but failed to receive voting authorization token.");
+      return;
+    }
+
+    setSubmitting(selectedCandidate);
+    setError("");
+
+    axios
+      .post("/polls/vote", {
+        candidate: selectedCandidate,
+        votingAuthorizationToken: token,
+        id: props.userId?.toString(),
+        name: props.userName,
+      })
+      .then((res) => {
+        setSubmitting("");
+        if (res.data?.transaction) {
+          setSuccessTx(res.data.transaction);
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000);
+        } else {
+          window.location.reload();
+        }
+      })
+      .catch((err) => {
+        setSubmitting("");
+        let message = err.message;
+        if (err?.response?.data) {
+          message =
+            typeof err.response.data === "string"
+              ? err.response.data
+              : JSON.stringify(err.response.data);
+        }
+        setError(message);
+      });
+  };
+
   const getButtons = () => {
     const names = [];
-
-    const vote = (candidate: string) => {
-      setSubmitting(candidate);
-      setError("");
-
-      axios
-        .post("/polls/vote", {
-          id: props.userId?.toString(),
-          name: props.userName,
-          candidate,
-        })
-        .then((res) => {
-          setSubmitting("");
-          if (res.data?.transaction) {
-            setSuccessTx(res.data.transaction);
-            setTimeout(() => {
-              window.location.reload();
-            }, 2500);
-          } else {
-            window.location.reload();
-          }
-        })
-        .catch((err) => {
-          setSubmitting("");
-          let message = err.message;
-          if (err?.response?.data) {
-            message =
-              typeof err.response.data === "string"
-                ? err.response.data
-                : JSON.stringify(err.response.data);
-          }
-          setError(message);
-        });
-    };
 
     for (const name in votes) {
       const isCurrentSubmitting = submitting === name;
       names.push(
         <button
-          onClick={() => vote(name)}
+          onClick={() => handleVoteInitiation(name)}
           key={name}
           disabled={submitting !== ""}
           className="button-wrapper text-normal"
@@ -64,7 +81,7 @@ const Chart = (props: ChartProps) => {
             cursor: submitting !== "" ? "not-allowed" : "pointer",
           }}
         >
-          {isCurrentSubmitting ? "Casting..." : `Vote for ${name}`}
+          {isCurrentSubmitting ? "Submitting Ballot..." : `Vote for ${name}`}
         </button>
       );
     }
@@ -145,8 +162,8 @@ const Chart = (props: ChartProps) => {
             <i className="bi bi-shield-check"></i>
           </span>
           <span>
-            Cryptographic ballot recorded! Block #{successTx.blockNumber}. Tx Hash:{" "}
-            {successTx.transactionHash?.slice(0, 10)}...
+            Ballot recorded on Blockchain! Block #{successTx.blockNumber}. Tx Hash:{" "}
+            {successTx.transactionHash?.slice(0, 14)}...
           </span>
         </div>
       )}
@@ -157,6 +174,15 @@ const Chart = (props: ChartProps) => {
       {props.enableVote ? (
         <div className="buttons-wrapper">{getButtons()}</div>
       ) : null}
+
+      {/* Biometric Identity Verification Modal */}
+      <BiometricCaptureModal
+        isOpen={bioModalOpen}
+        onClose={() => setBioModalOpen(false)}
+        mode="voting"
+        electionId={props.electionId || 1}
+        onSuccess={handleBiometricSuccess}
+      />
     </div>
   );
 };

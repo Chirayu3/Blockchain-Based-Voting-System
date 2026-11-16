@@ -12,7 +12,12 @@ const User = () => {
     "finished" | "running" | "not-started" | "checking"
   >("checking");
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState({ name: "", description: "", votes: {} });
+  const [data, setData] = useState<{ id?: number; name: string; description: string; votes: any }>({
+    id: 1,
+    name: "",
+    description: "",
+    votes: {},
+  });
   const [votable, setVotable] = useState("");
 
   const authContext = useContext(AuthContext);
@@ -68,6 +73,7 @@ const User = () => {
           userId={authContext.id}
           userName={authContext.name}
           votes={data.votes}
+          electionId={data.id}
         />
       </>
     </Panel>

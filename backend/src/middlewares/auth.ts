@@ -69,7 +69,7 @@ export const authenticateToken = async (
       id: dbUser.id,
       name: dbUser.name,
       email: dbUser.email,
-      voterId: dbUser.voterId,
+      voterId: dbUser.voterId || "",
       admin: Boolean(dbUser.admin),
       verified: Boolean(dbUser.verified),
       emailVerified: Boolean(dbUser.emailVerified),

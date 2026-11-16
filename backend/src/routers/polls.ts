@@ -7,6 +7,10 @@ import endController from "../controllers/polls/end";
 import resetController from "../controllers/polls/reset";
 import votesController from "../controllers/polls/votes";
 import voteController, { checkVoteability } from "../controllers/polls/vote";
+import {
+  requestVotingChallenge,
+  verifyVotingBiometrics,
+} from "../controllers/biometrics/verification";
 import statsController from "../controllers/polls/stats";
 import singleElectionController from "../controllers/polls/single-election";
 import {
@@ -28,6 +32,18 @@ router.get("/", asyncHandler(fetchController));
 router.get("/status", asyncHandler(statusController));
 router.get("/votes", asyncHandler(votesController));
 router.post("/check-voteability", asyncHandler(checkVoteability));
+
+// Biometric voting challenge and verification routes
+router.post(
+  "/:electionId/biometric/challenge",
+  authenticateToken,
+  asyncHandler(requestVotingChallenge)
+);
+router.post(
+  "/:electionId/biometric/verify",
+  authenticateToken,
+  asyncHandler(verifyVotingBiometrics)
+);
 
 // Voter actions (Requires verified voter)
 router.post("/vote", requireVerifiedVoter, asyncHandler(voteController));

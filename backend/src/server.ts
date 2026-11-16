@@ -5,6 +5,7 @@ import cors from "cors";
 import authRouter from "./routers/auth";
 import pollsRouter from "./routers/polls";
 import usersRouter from "./routers/users";
+import biometricsRouter from "./routers/biometrics";
 import errorHandler from "./middlewares/errorHandler";
 
 const app = express();
@@ -28,9 +29,10 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json({ limit: "15mb" }));
 app.use(cookieParser());
 app.use("/auth", authRouter);
+app.use("/auth/biometrics", biometricsRouter);
 app.use("/polls", pollsRouter);
 app.use("/users", usersRouter);
 

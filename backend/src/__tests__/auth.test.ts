@@ -1,17 +1,19 @@
 import request from "supertest";
 import { createConnection, getConnection, Connection, IsNull } from "typeorm";
 import app from "../server";
-import { User } from "../entity/User";
+import { User, RegistrationStatus } from "../entity/User";
 import { OtpChallenge } from "../entity/OtpChallenge";
 import { EmailService } from "../services/email/EmailService";
 import { rateLimiter } from "../utils/rateLimiter";
 import { hashOtp } from "../utils/otpSecurity";
 import { recoverAdminPassword } from "../scripts/adminRecovery";
+import { generateUniqueVoterId } from "../utils/voterId";
 import bcrypt from "bcrypt";
 
 describe("Voter Registration & Email OTP Authentication Test Suite", () => {
   let connection: Connection;
   let sendRegEmailSpy: jest.SpyInstance;
+  let sendRegAckEmailSpy: jest.SpyInstance;
   let sendOtpEmailSpy: jest.SpyInstance;
 
   beforeAll(async () => {
@@ -22,6 +24,9 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
     sendRegEmailSpy = jest
       .spyOn(EmailService, "sendRegistrationEmail")
       .mockResolvedValue(true);
+    sendRegAckEmailSpy = jest
+      .spyOn(EmailService, "sendRegistrationAcknowledgementEmail")
+      .mockResolvedValue(true);
     sendOtpEmailSpy = jest
       .spyOn(EmailService, "sendOtpEmail")
       .mockResolvedValue(true);
@@ -29,6 +34,7 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
 
   afterAll(async () => {
     sendRegEmailSpy.mockRestore();
+    sendRegAckEmailSpy.mockRestore();
     sendOtpEmailSpy.mockRestore();
     if (connection && connection.isConnected) {
       await connection.close();
@@ -38,13 +44,15 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
   beforeEach(async () => {
     rateLimiter.reset();
     sendRegEmailSpy.mockClear();
+    sendRegAckEmailSpy.mockClear();
     sendOtpEmailSpy.mockClear();
     sendRegEmailSpy.mockResolvedValue(true);
+    sendRegAckEmailSpy.mockResolvedValue(true);
     sendOtpEmailSpy.mockResolvedValue(true);
   });
 
   // 1. Successful voter registration
-  test("1. Successful voter registration: generates Voter ID and dispatches confirmation email", async () => {
+  test("1. Successful voter registration: creates pending approval user and dispatches acknowledgement email", async () => {
     const uniqueEmail = `testvoter_${Date.now()}@example.com`;
     const uniqueCit = `CIT_${Date.now()}`;
 
@@ -59,16 +67,19 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
 
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
-    expect(res.body.voterId).toMatch(/^BBVS-\d{4}-\d{6}$/);
+    expect(res.body.voterId).toBeUndefined();
+    expect(res.body.registrationStatus).toBe(RegistrationStatus.PENDING_APPROVAL);
     expect(res.body.emailDelivery.sent).toBe(true);
 
     const dbUser = await User.findOne({ where: { email: uniqueEmail } });
     expect(dbUser).toBeDefined();
+    expect(dbUser?.voterId).toBeNull();
+    expect(dbUser?.registrationStatus).toBe(RegistrationStatus.PENDING_APPROVAL);
     expect(dbUser?.admin).toBe(false);
     expect(dbUser?.verified).toBe(false); // Legacy admin verification
     expect(dbUser?.emailVerified).toBe(false); // Email ownership
     expect(dbUser?.isActive).toBe(true);
-    expect(sendRegEmailSpy).toHaveBeenCalledTimes(1);
+    expect(sendRegAckEmailSpy).toHaveBeenCalledTimes(1);
   });
 
   // 2. Duplicate email rejection
@@ -110,23 +121,16 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
   // 4. Collision-safe Voter ID generation format
   test("4. Collision-safe Voter ID matches BBVS-YYYY-###### format", async () => {
     const currentYear = new Date().getFullYear();
-    const res = await request(app)
-      .post("/auth/signup")
-      .send({
-        name: "Format Test Voter",
-        email: `format_${Date.now()}@example.com`,
-        citizenshipNumber: `CIT_FMT_${Date.now()}`,
-        password: "Password123!",
-      });
+    const voterId = await generateUniqueVoterId();
 
-    expect(res.status).toBe(201);
-    expect(res.body.voterId.startsWith(`BBVS-${currentYear}-`)).toBe(true);
-    expect(res.body.voterId).toHaveLength(16);
+    expect(voterId.startsWith(`BBVS-${currentYear}-`)).toBe(true);
+    expect(voterId).toHaveLength(16);
+    expect(voterId).toMatch(/^BBVS-\d{4}-\d{6}$/);
   });
 
   // 5. SMTP registration failure after account creation
-  test("5. Registration survives SMTP failure: user saved and Voter ID returned with non-fatal status", async () => {
-    sendRegEmailSpy.mockResolvedValueOnce(false); // Simulate SMTP failure
+  test("5. Registration survives SMTP failure: user saved and acknowledgement status returned", async () => {
+    sendRegAckEmailSpy.mockResolvedValueOnce(false); // Simulate SMTP failure
     const email = `smtp_fail_${Date.now()}@example.com`;
 
     const res = await request(app)
@@ -140,13 +144,14 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
 
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
-    expect(res.body.voterId).toBeDefined();
+    expect(res.body.voterId).toBeUndefined();
     expect(res.body.emailDelivery.sent).toBe(false);
 
     // Verify user is persisted in DB despite email failure
     const dbUser = await User.findOne({ where: { email } });
     expect(dbUser).toBeDefined();
-    expect(dbUser?.voterId).toBe(res.body.voterId);
+    expect(dbUser?.voterId).toBeNull();
+    expect(dbUser?.registrationStatus).toBe(RegistrationStatus.PENDING_APPROVAL);
   });
 
   // 6. Resend registration confirmation email
@@ -257,6 +262,7 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
     voter.verified = false; // Legacy admin verification
     voter.emailVerified = false;
     voter.isActive = true;
+    voter.registrationStatus = RegistrationStatus.APPROVED;
     await User.save(voter);
 
     // Request OTP

@@ -31,46 +31,36 @@ const Signup = (): JSX.Element => {
 
   const [error, setError] = useState<string>("");
   const [successData, setSuccessData] = useState<{
-    voterId: string;
     email: string;
     name: string;
     emailSent: boolean;
   } | null>(null);
-  const [copied, setCopied] = useState<boolean>(false);
   const [resendStatus, setResendStatus] = useState<string>("");
 
-  const handleCopy = () => {
-    if (successData?.voterId) {
-      navigator.clipboard.writeText(successData.voterId);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
-  };
-
   const handleResendEmail = async () => {
-    if (!successData?.voterId) return;
-    setResendStatus("Sending confirmation email...");
+    if (!successData?.email) return;
+    setResendStatus("Dispatching acknowledgement email...");
     try {
       await axios.post("/auth/resend-registration-email", {
-        voterId: successData.voterId,
+        email: successData.email,
       });
-      setResendStatus("Confirmation email dispatched successfully!");
+      setResendStatus("Acknowledgement email re-sent successfully!");
     } catch (err: any) {
-      const msg = err?.response?.data || "Failed to resend confirmation email.";
+      const msg = err?.response?.data || "Failed to resend email.";
       setResendStatus(typeof msg === "string" ? msg : JSON.stringify(msg));
     }
   };
 
-  // If registration succeeded, show the dedicated Voter ID display card
+  // If registration succeeded, show the dedicated Registration Confirmation screen (No Voter ID displayed)
   if (successData) {
     return (
-      <LoginLayout error={""} success={"Voter Account Created Successfully!"}>
+      <LoginLayout error={""} success={"Registration Request Received"}>
         <div className="form-container">
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
             <span
               style={{
-                background: "#f0fdf4",
-                color: "#16a34a",
+                background: "#eff6ff",
+                color: "#2563eb",
                 padding: "4px 10px",
                 borderRadius: "9999px",
                 fontSize: "0.775rem",
@@ -79,84 +69,69 @@ const Signup = (): JSX.Element => {
                 textTransform: "uppercase",
               }}
             >
-              ✓ Registration Completed
+              ✓ Request Submitted
+            </span>
+            <span
+              style={{
+                background: "#fef3c7",
+                color: "#b45309",
+                padding: "4px 10px",
+                borderRadius: "9999px",
+                fontSize: "0.775rem",
+                fontWeight: 700,
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+              }}
+            >
+              Pending Verification
             </span>
           </div>
 
-          <div className="form-title">Your Voter ID</div>
+          <div className="form-title">Registration Request Received</div>
           <div className="form-subtitle">
-            Welcome, <strong>{successData.name}</strong>. Your permanent cryptographic voter identifier has been assigned.
+            Thank you, <strong>{successData.name}</strong>. Your voter registration application has been submitted to the election administration team.
           </div>
 
           <div
             style={{
               background: "#f8fafc",
-              border: "2px dashed #3b82f6",
+              border: "1px solid #cbd5e1",
               borderRadius: "8px",
               padding: "20px",
-              textAlign: "center",
               margin: "20px 0",
+              textAlign: "left",
             }}
           >
-            <div
-              style={{
-                fontSize: "0.8rem",
-                color: "#64748b",
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                marginBottom: "6px",
-              }}
-            >
-              Permanent Voter ID
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+              <i className="bi bi-clock-history" style={{ fontSize: "1.5rem", color: "#2563eb", marginTop: 2 }}></i>
+              <div>
+                <div style={{ fontWeight: 700, color: "#1e293b", fontSize: "0.95rem", marginBottom: 4 }}>
+                  24-Hour Review Target
+                </div>
+                <p style={{ margin: 0, fontSize: "0.875rem", color: "#475569", lineHeight: 1.5 }}>
+                  Your details are currently under administrator review. You should receive an update within <strong>24 hours</strong>.
+                </p>
+              </div>
             </div>
-            <div
-              style={{
-                fontSize: "1.75rem",
-                fontWeight: 800,
-                letterSpacing: "0.08em",
-                color: "#1e293b",
-                fontFamily: "monospace",
-              }}
-            >
-              {successData.voterId}
-            </div>
-
-            <button
-              onClick={handleCopy}
-              type="button"
-              style={{
-                marginTop: "12px",
-                background: copied ? "#16a34a" : "#2563eb",
-                color: "#ffffff",
-                border: "none",
-                borderRadius: "6px",
-                padding: "8px 16px",
-                fontSize: "0.875rem",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "background 0.2s",
-              }}
-            >
-              <i className={copied ? "bi bi-check2" : "bi bi-clipboard"}></i>{" "}
-              {copied ? "Copied to Clipboard!" : "Copy Voter ID"}
-            </button>
           </div>
 
           <div
             style={{
-              background: "#fffbeb",
-              border: "1px solid #fef3c7",
+              background: "#f0fdf4",
+              border: "1px solid #bbf7d0",
               borderRadius: "6px",
-              padding: "12px 16px",
+              padding: "14px 16px",
               fontSize: "0.85rem",
-              color: "#92400e",
+              color: "#166534",
               lineHeight: 1.5,
-              marginBottom: "16px",
+              marginBottom: "20px",
             }}
           >
-            <i className="bi bi-shield-exclamation" style={{ marginRight: 6 }}></i>
-            <strong>Important:</strong> You must save this Voter ID. You will use this Voter ID and your password to authenticate and receive email OTPs.
+            <i className="bi bi-shield-check" style={{ marginRight: 6 }}></i>
+            <strong>Voter ID Notice:</strong> Once your registration is approved by an administrator, your unique, permanent Voter ID will be generated and dispatched to:
+            <div style={{ fontWeight: 700, marginTop: 4, fontFamily: "monospace" }}>
+              {successData.email}
+            </div>
           </div>
 
           {successData.emailSent ? (
@@ -169,7 +144,7 @@ const Signup = (): JSX.Element => {
               }}
             >
               <i className="bi bi-envelope-check" style={{ color: "#16a34a", marginRight: 6 }}></i>
-              A confirmation email has been sent to <strong>{successData.email}</strong>.
+              An acknowledgement email has been sent to <strong>{successData.email}</strong>.
             </div>
           ) : (
             <div
@@ -181,7 +156,7 @@ const Signup = (): JSX.Element => {
               }}
             >
               <i className="bi bi-exclamation-triangle" style={{ marginRight: 6 }}></i>
-              Automated email delivery could not be completed, but your account is active. Please record your Voter ID above.
+              Your registration was saved successfully, but the automated acknowledgement email could not be sent.
               <button
                 onClick={handleResendEmail}
                 type="button"
@@ -197,7 +172,7 @@ const Signup = (): JSX.Element => {
                   padding: 0,
                 }}
               >
-                Resend confirmation email
+                Resend acknowledgement email
               </button>
               {resendStatus && (
                 <div style={{ marginTop: "4px", color: "#1e293b", fontWeight: 500 }}>
@@ -212,7 +187,7 @@ const Signup = (): JSX.Element => {
             className="button-primary"
             type="button"
           >
-            <i className="bi bi-box-arrow-in-right"></i> Proceed to Sign In
+            <i className="bi bi-arrow-left"></i> Return to Voter Sign In
           </button>
         </div>
       </LoginLayout>
@@ -225,7 +200,7 @@ const Signup = (): JSX.Element => {
         <div className="form-container">
           <div className="form-title">Create Voter Account</div>
           <div className="form-subtitle">
-            Register your identity to receive your unique Voter ID and vote cryptographically.
+            Submit your identity for administrator verification. Once approved, your Voter ID will be emailed to you.
           </div>
 
           <Formik
@@ -248,7 +223,6 @@ const Signup = (): JSX.Element => {
                 })
                 .then((res) => {
                   setSuccessData({
-                    voterId: res.data.voterId,
                     email: res.data.email,
                     name: res.data.name,
                     emailSent: res.data.emailDelivery?.sent ?? true,
@@ -353,10 +327,10 @@ const Signup = (): JSX.Element => {
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
-                    "Generating Voter ID..."
+                    "Submitting Application..."
                   ) : (
                     <>
-                      <i className="bi bi-person-plus"></i> Register & Generate Voter ID
+                      <i className="bi bi-send-check"></i> Submit Voter Registration
                     </>
                   )}
                 </button>
@@ -365,7 +339,7 @@ const Signup = (): JSX.Element => {
           </Formik>
 
           <hr />
-          <div className="form-info-text">Already registered with a Voter ID?</div>
+          <div className="form-info-text">Already approved and received your Voter ID?</div>
 
           <button
             onClick={() => navigate("/login")}

@@ -1,30 +1,69 @@
 # Dependencies
 node_modules/
+/.pnp
+.pnp.js
 
-# Environment files
+# Environment and Secret files
 .env
 .env.local
 .env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+
+# Python Virtual Environments & Runtime
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+venv/
+.venv/
+
+# Testing & Coverage
+coverage/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.hypothesis/
+
+# Biometric & ML Model Artifacts (downloaded via download_models.py)
+*.onnx
+biometric_service/models/
+models/
 
 # Logs and runtime data
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# OS and IDE files
+# Editor & OS files
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+*.swp
+*.swo
+.eslintcache
 
-# Database dumps
+# Database dumps and temporary files
 backup_*.json
+*.sql
+*.sqlite
+*.sqlite3
+*.tmp
+*.temp
 
 # Build outputs
 /build/
 frontend/build/
 backend/dist/
+dist/
 
 # Truffle contract artifacts required by Web3 backend
 !backend/build/
