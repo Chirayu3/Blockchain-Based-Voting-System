@@ -10,6 +10,8 @@ import {
 import { Candidate } from "./Candidate";
 import { Transaction } from "./Transaction";
 
+export type PollStatus = "not-started" | "running" | "finished";
+
 @Entity()
 export class Poll extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -21,8 +23,8 @@ export class Poll extends BaseEntity {
   @Column({ type: "text", nullable: true })
   description!: string;
 
-  @Column({ default: "running" })
-  status!: string;
+  @Column({ type: "varchar", length: 50, default: "not-started" })
+  status!: PollStatus;
 
   @CreateDateColumn()
   createdAt!: Date;

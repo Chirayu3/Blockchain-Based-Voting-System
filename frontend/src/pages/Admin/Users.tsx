@@ -6,6 +6,7 @@ type User = {
   name: string;
   citizenshipNumber: string;
   email: string;
+  voterId?: string;
 };
 
 const Users = () => {
@@ -66,6 +67,11 @@ const Users = () => {
             </span>
             <div>
               <div className="user-name">{user.name}</div>
+              {user.voterId && (
+                <div className="user-meta" style={{ fontFamily: "monospace", color: "#2563eb", fontWeight: 600 }}>
+                  Voter ID: {user.voterId}
+                </div>
+              )}
               {user.citizenshipNumber && (
                 <div className="user-meta">Citizen ID: {user.citizenshipNumber}</div>
               )}

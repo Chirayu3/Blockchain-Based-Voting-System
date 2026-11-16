@@ -1,4 +1,11 @@
-build
 node_modules
-node_modules/**/*
+dist
 .env
+.env.local
+backup_*.json
+*.log
+
+# Ignore build directory except deployed Truffle contract artifacts
+build/*
+!build/contracts/
+!build/contracts/*.json

@@ -13,33 +13,37 @@ import {
   getVoterHistory,
 } from "../controllers/polls/transactions";
 import exportCsvController from "../controllers/polls/export-csv";
-import singleElectionController from "../controllers/polls/single-election";
 import {
   authenticateToken,
   requireAdmin,
   requireVerifiedVoter,
 } from "../middlewares/auth";
+import asyncHandler from "../middlewares/asyncHandler";
 
 const router = express.Router();
 
 // Public / general poll routes
-router.get("/", fetchController);
-router.get("/status", statusController);
-router.get("/votes", votesController);
-router.post("/check-voteability", checkVoteability);
+router.get("/", asyncHandler(fetchController));
+router.get("/status", asyncHandler(statusController));
+router.get("/votes", asyncHandler(votesController));
+router.post("/check-voteability", asyncHandler(checkVoteability));
 
 // Voter actions (Requires verified voter)
-router.post("/vote", requireVerifiedVoter, voteController);
-router.get("/voter/history", authenticateToken, getVoterHistory);
+router.post("/vote", requireVerifiedVoter, asyncHandler(voteController));
+router.get("/voter/history", authenticateToken, asyncHandler(getVoterHistory));
 
 // Admin-only routes (Requires admin authorization)
-router.post("/start", requireAdmin, startController);
-router.post("/end", requireAdmin, endController);
-router.post("/reset", requireAdmin, resetController);
-router.get("/admin/stats", requireAdmin, statsController);
-router.get("/admin/election/:id", requireAdmin, singleElectionController);
-router.get("/admin/transactions", requireAdmin, getAllTransactions);
-router.get("/export-csv", requireAdmin, exportCsvController);
-router.get("/export-csv/:id", requireAdmin, exportCsvController);
+router.post("/start", requireAdmin, asyncHandler(startController));
+router.post("/end", requireAdmin, asyncHandler(endController));
+router.post("/reset", requireAdmin, asyncHandler(resetController));
+router.get("/admin/stats", requireAdmin, asyncHandler(statsController));
+router.get(
+  "/admin/election/:id",
+  requireAdmin,
+  asyncHandler(singleElectionController)
+);
+router.get("/admin/transactions", requireAdmin, asyncHandler(getAllTransactions));
+router.get("/export-csv", requireAdmin, asyncHandler(exportCsvController));
+router.get("/export-csv/:id", requireAdmin, asyncHandler(exportCsvController));
 
 export default router;

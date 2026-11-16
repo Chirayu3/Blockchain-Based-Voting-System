@@ -48,6 +48,7 @@ export const getAllTransactions = async (
         name: tx.voter ? tx.voter.name : `Voter #${tx.voterId}`,
         email: tx.voter ? tx.voter.email : "",
         citizenshipNumber: tx.voter ? tx.voter.citizenshipNumber : "",
+        voterId: tx.voter ? tx.voter.voterId : "",
       },
       election: {
         id: tx.election ? tx.election.id : tx.electionId,
