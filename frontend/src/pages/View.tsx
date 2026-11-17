@@ -22,7 +22,11 @@ const View = (props: RouteProps): JSX.Element => {
         setStatus(res.data.status);
         setLoading(false);
       })
-      .catch((error) => console.log({ error }));
+      .catch((error) => {
+        console.error("Error fetching ballot status:", error);
+        setStatus("not-started");
+        setLoading(false);
+      });
   }, []);
 
   let comp = (
@@ -32,15 +36,50 @@ const View = (props: RouteProps): JSX.Element => {
     </div>
   );
 
-  if (loading) return comp;
-
-  if (status === "finished") comp = <Result />;
-  if (status === "running") comp = <Polls />;
-  if (status === "not-started") comp = <Start />;
+  if (!loading) {
+    if (status === "finished") comp = <Result />;
+    if (status === "running") comp = <Polls />;
+    if (status === "not-started") comp = <Start />;
+  }
 
   return (
     <div className="view-container">
-      <Back call={() => navigate("/")} />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <Back call={() => navigate("/")} label="Return Home" />
+        <div
+          style={{
+            fontSize: "0.8rem",
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: status === "running" ? "#16a34a" : "#64748b",
+            background: status === "running" ? "#f0fdf4" : "#f1f5f9",
+            border: `1px solid ${status === "running" ? "#bbf7d0" : "#e2e8f0"}`,
+            padding: "5px 12px",
+            borderRadius: 9999,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <span
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              backgroundColor: status === "running" ? "#16a34a" : "#94a3b8",
+            }}
+          ></span>
+          <span>
+            {status === "running"
+              ? "Live Election in Progress"
+              : status === "finished"
+                ? "Election Concluded"
+                : "Awaiting Election Initiation"}
+          </span>
+        </div>
+      </div>
+
       <div>{comp}</div>
     </div>
   );

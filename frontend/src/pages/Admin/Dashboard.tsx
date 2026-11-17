@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 import axios from "../../axios";
 
@@ -58,6 +58,10 @@ interface DashboardStats {
     totalRegistered: number;
     verified: number;
     pendingApprovals: number;
+    approved?: number;
+    rejected?: number;
+    approachingDeadline?: number;
+    overdue?: number;
   };
   electionStats: {
     total: number;
@@ -97,7 +101,7 @@ const Dashboard = (): JSX.Element => {
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
   const [copiedHash, setCopiedHash] = useState<string>("");
 
-  const fetchStats = () => {
+  const fetchStats = useCallback(() => {
     axios
       .get("/polls/admin/stats")
       .then((res) => {
@@ -111,13 +115,13 @@ const Dashboard = (): JSX.Element => {
         console.error("Failed to fetch admin dashboard statistics:", err);
         setLoading(false);
       });
-  };
+  }, [selectedElectionId]);
 
   useEffect(() => {
     fetchStats();
     const interval = setInterval(fetchStats, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchStats]);
 
   // Fetch full details and transaction history whenever selected election changes
   useEffect(() => {
@@ -175,6 +179,10 @@ const Dashboard = (): JSX.Element => {
     totalRegistered: 0,
     verified: 0,
     pendingApprovals: 0,
+    approved: 0,
+    rejected: 0,
+    approachingDeadline: 0,
+    overdue: 0,
   };
   const electionStats = data?.electionStats || {
     total: 0,
@@ -242,6 +250,99 @@ const Dashboard = (): JSX.Element => {
               </span>
             )}
           </button>
+        </div>
+      </div>
+
+      {/* Voter Registration Review & 24h SLA Section */}
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span
+              style={{
+                fontSize: "0.8rem",
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                color: "#1e3a8a",
+                background: "#dbeafe",
+                padding: "3px 10px",
+                borderRadius: "6px",
+              }}
+            >
+              Voter Registration Approval & 24h SLA Hub
+            </span>
+            <span style={{ fontSize: "0.8rem", color: "#64748b" }}>
+              Target: Process new registrations within 24 hours of submission
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate("/users")}
+            className="button-primary"
+            style={{ padding: "5px 12px", fontSize: "0.825rem" }}
+          >
+            Open Registration Hub &rarr;
+          </button>
+        </div>
+
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-icon amber">
+              <i className="bi bi-person-lines-fill"></i>
+            </div>
+            <div className="stat-info">
+              <span className="stat-label">Pending Approval</span>
+              <span className="stat-value">{voterStats.pendingApprovals}</span>
+              <span className="stat-desc">Awaiting verification</span>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon emerald">
+              <i className="bi bi-person-check-fill"></i>
+            </div>
+            <div className="stat-info">
+              <span className="stat-label">Approved Voters</span>
+              <span className="stat-value">{voterStats.approved ?? voterStats.verified}</span>
+              <span className="stat-desc">Voter IDs assigned</span>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon red" style={{ background: "#fee2e2", color: "#dc2626" }}>
+              <i className="bi bi-person-x-fill"></i>
+            </div>
+            <div className="stat-info">
+              <span className="stat-label">Rejected Applications</span>
+              <span className="stat-value">{voterStats.rejected ?? 0}</span>
+              <span className="stat-desc">Preserved for audit</span>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon sky" style={{ background: (voterStats.approachingDeadline ?? 0) > 0 ? "#fef3c7" : "#f1f5f9", color: (voterStats.approachingDeadline ?? 0) > 0 ? "#b45309" : "#64748b" }}>
+              <i className="bi bi-hourglass-split"></i>
+            </div>
+            <div className="stat-info">
+              <span className="stat-label">Due Soon (&lt; 6h)</span>
+              <span className="stat-value">{voterStats.approachingDeadline ?? 0}</span>
+              <span className="stat-desc">Approaching 24h limit</span>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon purple" style={{ background: (voterStats.overdue ?? 0) > 0 ? "#fee2e2" : "#f1f5f9", color: (voterStats.overdue ?? 0) > 0 ? "#dc2626" : "#64748b" }}>
+              <i className="bi bi-exclamation-octagon-fill"></i>
+            </div>
+            <div className="stat-info">
+              <span className="stat-label">Overdue (&gt; 24h)</span>
+              <span className="stat-value" style={{ color: (voterStats.overdue ?? 0) > 0 ? "#dc2626" : "inherit" }}>
+                {voterStats.overdue ?? 0}
+              </span>
+              <span className="stat-desc">Exceeded review target</span>
+            </div>
+          </div>
         </div>
       </div>
 

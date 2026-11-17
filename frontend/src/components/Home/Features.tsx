@@ -4,64 +4,57 @@ import { MdGppGood, MdLibraryAddCheck, MdLock, MdShare } from "react-icons/md";
 
 const Features = () => {
   return (
-    <div className="features-wrapper">
-      <div className="title-large">Amazing Features</div>
-      <div className="title-small">
-        lorem ipsum dosa is posa and gosa is the best thing i can come up with
+    <section className="features-wrapper" id="features">
+      <div className="features-badge">
+        <i className="bi bi-cpu"></i> Protocol Capabilities
       </div>
+      <h2 className="title-large">Enterprise Blockchain Security</h2>
+      <p className="features-subtitle">
+        Cryptographic guarantees, distributed consensus, and biometric identity verification ensure absolute election integrity and trust.
+      </p>
 
       <div className="mobile-wrapper">
         <div>
-          <Feature title="Immutability" icon={<MdLock />} align="right">
+          <Feature title="Cryptographic Immutability" icon={<MdLock />} align="right">
             <p>
-              Immutability means something that can’t be changed or altered.
-              This is one of the top blockchain features that help to ensure
-              that the technology will remain as it is, a permanent, unalterable
-              network.
+              Once a ballot is committed to an Ethereum smart contract block, it is mathematically permanent. No administrator, attacker, or authority can modify or delete recorded votes.
             </p>
           </Feature>
         </div>
 
         <div className="mobile-container">
-          <img src="/mobile.png" />
+          <img src="/mobile.png" alt="Mobile voting application interface" />
         </div>
 
         <div>
-          <Feature title="Enhanced Security" icon={<MdGppGood />} align="left">
+          <Feature title="Biometric Liveness & Anti-Spoofing" icon={<MdGppGood />} align="left">
             <p>
-              Immutability means something that can’t be changed or altered.
-              This is one of the top blockchain features that help to ensure
-              that the technology will remain as it is, a permanent, unalterable
-              network.
+              Live facial verification with head pose challenge-response protects against presentation attacks. Biometric templates are encrypted with authenticated AES-256-GCM.
             </p>
           </Feature>
         </div>
+
         <div>
-          <Feature title="Decentralized" icon={<MdShare />} align="right">
+          <Feature title="Decentralized Consensus" icon={<MdShare />} align="right">
             <p>
-              Immutability means something that can’t be changed or altered.
-              This is one of the top blockchain features that help to ensure
-              that the technology will remain as it is, a permanent, unalterable
-              network.
+              Eliminates single points of failure. The election status and results are independently validated across distributed nodes, ensuring continuous uptime and censorship resistance.
             </p>
           </Feature>
         </div>
+
         <div>
           <Feature
-            title="Distributed Ledger"
+            title="Verifiable On-Chain Ledger"
             icon={<MdLibraryAddCheck />}
             align="left"
           >
             <p>
-              Immutability means something that can’t be changed or altered.
-              This is one of the top blockchain features that help to ensure
-              that the technology will remain as it is, a permanent, unalterable
-              network.
+              Every voter receives a cryptographic transaction hash receipt. Anyone can independently inspect election returns without compromising voter secret ballot confidentiality.
             </p>
           </Feature>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

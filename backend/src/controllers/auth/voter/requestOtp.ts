@@ -3,7 +3,7 @@ import * as yup from "yup";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import { getConnection, IsNull } from "typeorm";
-import { User } from "../../../entity/User";
+import { User, RegistrationStatus } from "../../../entity/User";
 import { OtpChallenge } from "../../../entity/OtpChallenge";
 import { EmailService } from "../../../services/email/EmailService";
 import { maskEmail } from "../../../utils/maskEmail";
@@ -64,6 +64,25 @@ export default async (req: Request, res: Response) => {
     return res
       .status(403)
       .send("Your account has been deactivated. Please contact an administrator.");
+  }
+
+  // Registration approval gatekeeping
+  if (user.registrationStatus !== RegistrationStatus.APPROVED) {
+    if (user.registrationStatus === RegistrationStatus.PENDING_APPROVAL) {
+      return res
+        .status(403)
+        .send(
+          "Your registration is currently pending administrator approval. You will receive your Voter ID via email once approved."
+        );
+    }
+    if (user.registrationStatus === RegistrationStatus.REJECTED) {
+      return res
+        .status(403)
+        .send(
+          "Your voter registration request has been rejected. Please contact an administrator."
+        );
+    }
+    return res.status(403).send("Your account is not approved for voting.");
   }
 
   // Validate password

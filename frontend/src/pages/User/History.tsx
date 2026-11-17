@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "../../axios";
 
 interface VoterTx {
@@ -14,6 +15,7 @@ interface VoterTx {
 }
 
 const History = (): JSX.Element => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
   const [history, setHistory] = useState<VoterTx[]>([]);
   const [copiedHash, setCopiedHash] = useState<string>("");
@@ -53,11 +55,25 @@ const History = (): JSX.Element => {
           <h1>My Voting Ledger & Proof of Ballot</h1>
           <p>Cryptographic receipts of your votes securely committed to the Ethereum network</p>
         </div>
+
+        <div className="dashboard-actions">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="button-primary"
+            style={{ padding: "8px 16px", fontSize: "0.85rem" }}
+          >
+            <i className="bi bi-box-arrow-in-right"></i> Active Polls
+          </button>
+        </div>
       </div>
 
       <div className="table-container">
         <div className="table-header-bar">
           <h3>Personal Ballot Receipts ({history.length})</h3>
+          <span style={{ fontSize: "0.8rem", color: "#64748b" }}>
+            Immutable records signed and mined into Ethereum blocks
+          </span>
         </div>
 
         <div className="table-responsive">
@@ -75,8 +91,24 @@ const History = (): JSX.Element => {
             <tbody>
               {history.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: "center", padding: 32, color: "#64748b" }}>
-                    You have not cast any cryptographic ballots yet.
+                  <td colSpan={6} style={{ textAlign: "center", padding: 48, color: "#64748b" }}>
+                    <div style={{ fontSize: "2rem", color: "#94a3b8", marginBottom: 12 }}>
+                      <i className="bi bi-receipt"></i>
+                    </div>
+                    <div style={{ fontWeight: 700, fontSize: "1.1rem", color: "#0f172a", marginBottom: 6 }}>
+                      No Ballots Cast Yet
+                    </div>
+                    <p style={{ margin: "0 0 16px 0", fontSize: "0.875rem" }}>
+                      Once you cast a vote in an active election, your cryptographic receipt and block hash will appear here.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => navigate("/")}
+                      className="button-primary"
+                      style={{ padding: "8px 18px", fontSize: "0.85rem" }}
+                    >
+                      Go to Active Election
+                    </button>
                   </td>
                 </tr>
               ) : (

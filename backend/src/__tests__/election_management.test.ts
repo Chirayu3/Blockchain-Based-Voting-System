@@ -6,6 +6,8 @@ import app from "../server";
 import { User } from "../entity/User";
 import { Poll } from "../entity/Poll";
 import { Transaction } from "../entity/Transaction";
+import { VotingAuthorization } from "../entity/VotingAuthorization";
+import { generateAuthorizationToken } from "../utils/biometricCrypto";
 import ElectionContract, { web3 } from "../web3";
 import bcrypt from "bcrypt";
 
@@ -184,10 +186,22 @@ describe("Election Lifecycle, Blockchain Integration & Crash Protection Test Sui
 
   // Test 5: Casting a vote
   test("5. Vote: records on blockchain first, then records transaction in MySQL", async () => {
+    const runningPoll = await Poll.findOne({ where: { status: "running" } });
+    const { token, tokenHash } = generateAuthorizationToken();
+    const auth = new VotingAuthorization();
+    auth.authorizationTokenHash = tokenHash;
+    auth.userId = voterUser.id;
+    auth.electionId = runningPoll!.id;
+    auth.verificationId = "test-verification-id";
+    auth.status = "issued";
+    auth.expiresAt = new Date(Date.now() + 120000);
+    await auth.save();
+
     const votePayload = {
       id: voterUser.id.toString(),
       name: voterUser.name,
       candidate: "Candidate Alice",
+      votingAuthorizationToken: token,
     };
 
     const res = await request(app)
@@ -212,10 +226,22 @@ describe("Election Lifecycle, Blockchain Integration & Crash Protection Test Sui
 
   // Test 6: Duplicate voting is prevented
   test("6. Duplicate vote rejection: voter cannot vote twice in the same election", async () => {
+    const runningPoll = await Poll.findOne({ where: { status: "running" } });
+    const { token: token2, tokenHash: tokenHash2 } = generateAuthorizationToken();
+    const auth2 = new VotingAuthorization();
+    auth2.authorizationTokenHash = tokenHash2;
+    auth2.userId = voterUser.id;
+    auth2.electionId = runningPoll!.id;
+    auth2.verificationId = "test-verification-id-2";
+    auth2.status = "issued";
+    auth2.expiresAt = new Date(Date.now() + 120000);
+    await auth2.save();
+
     const votePayload = {
       id: voterUser.id.toString(),
       name: voterUser.name,
       candidate: "Candidate Bob",
+      votingAuthorizationToken: token2,
     };
 
     const res = await request(app)

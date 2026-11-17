@@ -60,11 +60,20 @@ export default async (req: Request, res: Response) => {
   }
 
   if (user) {
-    await EmailService.sendRegistrationEmail({
-      to: user.email,
-      name: user.name,
-      voterId: user.voterId,
-    });
+    if (user.voterId) {
+      await EmailService.sendRegistrationEmail({
+        userId: user.id,
+        to: user.email,
+        name: user.name,
+        voterId: user.voterId,
+      });
+    } else {
+      await EmailService.sendRegistrationAcknowledgementEmail({
+        userId: user.id,
+        to: user.email,
+        name: user.name,
+      });
+    }
   }
 
   // Generic response to avoid enumeration

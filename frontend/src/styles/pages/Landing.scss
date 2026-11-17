@@ -15,7 +15,7 @@
   }
 
   .left {
-    padding: 80px;
+    padding: 70px 80px;
     background: transparent;
     color: $theme-text;
     display: flex;
@@ -27,25 +27,15 @@
       align-items: center;
     }
 
-    .logo {
-      padding-bottom: 32px;
-      display: flex;
+    .badge-pill {
+      display: inline-flex;
       align-items: center;
-
-      img {
-        width: 140px;
-        height: auto;
-        filter: drop-shadow(0 2px 8px rgba(15, 23, 42, 0.08));
-      }
-    }
-
-    &::before {
-      content: "• NEXT-GEN DECENTRALIZED GOVERNANCE";
-      display: inline-block;
+      gap: 6px;
       align-self: flex-start;
       font-size: 0.775rem;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       color: $theme-primary;
       background: #eff6ff;
       border: 1px solid rgba(37, 99, 235, 0.2);
@@ -56,6 +46,26 @@
       @media (max-width: 960px) {
         align-self: center;
       }
+
+      .pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #2563eb;
+        animation: radarPulse 2s infinite;
+      }
+    }
+
+    .logo {
+      padding-bottom: 24px;
+      display: flex;
+      align-items: center;
+
+      img {
+        width: 140px;
+        height: auto;
+        filter: drop-shadow(0 2px 8px rgba(15, 23, 42, 0.08));
+      }
     }
 
     .title-large {
@@ -65,7 +75,7 @@
       line-height: 1.12;
       color: #0f172a;
 
-      &:nth-of-type(2) {
+      &.highlight {
         background: linear-gradient(135deg, $theme-primary 0%, #4f46e5 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -85,18 +95,14 @@
       letter-spacing: -0.01em;
       text-transform: none;
       line-height: 1.6;
-      max-width: 480px;
-
-      &::after {
-        content: " — secure, immutable, and transparent electronic elections powered by Ethereum smart contracts.";
-        display: inline;
-      }
+      max-width: 500px;
     }
 
     .button-wrapper {
       padding-top: 36px;
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 14px;
 
       @media (max-width: 960px) {
@@ -118,25 +124,51 @@
       }
 
       button {
-        padding: 13px 28px;
+        padding: 13px 26px;
         font-size: 0.95rem;
         font-weight: 600;
         letter-spacing: 0.02em;
         border-radius: 10px;
         margin: 0;
+      }
 
-        &:not(.button-black) {
-          background: #ffffff;
-          border: 1.5px solid #cbd5e1;
-          color: $theme-text;
-          box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+      .button-primary {
+        background: linear-gradient(135deg, $theme-primary 0%, #1d4ed8 100%);
+        color: #ffffff;
+        border: 1px solid transparent;
+        @include box-shadow-primary;
 
-          &:hover {
-            border-color: $theme-primary;
-            color: $theme-primary;
-            background: #eff6ff;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
-          }
+        &:hover {
+          background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+          box-shadow: 0 6px 18px rgba(37, 99, 235, 0.38);
+          transform: translateY(-2px);
+        }
+      }
+
+      .button-black {
+        background: #0f172a;
+        color: #ffffff;
+        border: 1px solid #1e293b;
+
+        &:hover {
+          background: #1e293b;
+          box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
+          transform: translateY(-2px);
+        }
+      }
+
+      .button-outline {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        color: $theme-text;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+
+        &:hover {
+          border-color: $theme-primary;
+          color: $theme-primary;
+          background: #eff6ff;
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+          transform: translateY(-2px);
         }
       }
     }

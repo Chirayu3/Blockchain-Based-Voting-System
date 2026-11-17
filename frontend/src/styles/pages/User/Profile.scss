@@ -6,13 +6,13 @@
   padding: 48px 40px;
   display: grid;
   box-sizing: border-box;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 280px 1fr;
   column-gap: 48px;
-  max-width: 900px;
+  max-width: 960px;
   width: 100%;
-  margin: 30px auto;
+  margin: 20px auto;
 
-  @media (max-width: 768px) {
+  @media (max-width: 820px) {
     grid-template-columns: 1fr;
     row-gap: 36px;
     padding: 30px 20px;
@@ -23,10 +23,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-right: 24px;
+    padding-right: 32px;
     border-right: 1px solid $theme-border;
 
-    @media (max-width: 768px) {
+    @media (max-width: 820px) {
       padding-right: 0;
       padding-bottom: 28px;
       border-right: none;
@@ -53,37 +53,55 @@
     }
 
     .username {
-      font-size: 1.25rem;
-      font-weight: 700;
+      font-size: 1.35rem;
+      font-weight: 800;
       color: $theme-text;
       padding: 0;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
     }
 
-    &::after {
-      content: "Verified Blockchain Voter";
-      display: inline-block;
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       font-size: 0.775rem;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #059669;
-      background: #ecfdf5;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 4px 12px;
+      padding: 4px 14px;
       border-radius: 9999px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
+
+      &.admin {
+        color: #1e40af;
+        background: #eff6ff;
+        border: 1px solid rgba(37, 99, 235, 0.3);
+      }
+
+      &.voter {
+        color: #059669;
+        background: #ecfdf5;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
     }
 
-    button {
+    .logout-button {
       width: 100%;
-      max-width: 180px;
+      max-width: 200px;
       padding: 10px 18px;
       font-size: 0.9rem;
       font-weight: 600;
       background: #ffffff;
       color: #dc2626;
-      border: 1px solid #fecaca;
+      border: 1.5px solid #fecaca;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
       box-shadow: 0 1px 3px rgba(220, 38, 38, 0.08);
 
       &:hover {
@@ -91,6 +109,7 @@
         border-color: #f87171;
         color: #b91c1c;
         box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+        transform: translateY(-1px);
       }
     }
   }
@@ -105,45 +124,50 @@
       color: $theme-text;
       padding-bottom: 16px;
       border-bottom: 1px solid $theme-border;
-      display: block;
-      margin-bottom: 20px;
-      letter-spacing: -0.02em;
-    }
-
-    .skeleton {
-      height: 48px;
-      width: 100%;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      margin-top: 12px;
-      border-radius: 10px;
       display: flex;
       align-items: center;
-      padding: 0 16px;
-      box-sizing: border-box;
-      position: relative;
-      overflow: hidden;
+      gap: 10px;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
 
-      &::after {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: #475569;
+      i {
+        color: $theme-primary;
+      }
+    }
+
+    .credential-card {
+      padding: 14px 18px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #ffffff;
+        border-color: #cbd5e1;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
       }
 
-      &:nth-of-type(1)::after {
-        content: "Identity Credential: Authenticated & Cryptographically Bound";
+      .card-label {
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.04em;
       }
 
-      &:nth-of-type(2)::after {
-        content: "Smart Contract Access: Authorized for Current Ballot Session";
-      }
+      .card-value {
+        font-size: 1rem;
+        color: #0f172a;
+        font-weight: 600;
+        margin-top: 4px;
 
-      &:nth-of-type(3)::after {
-        content: "Ledger Network: Ethereum Testnet Node Active";
-      }
-
-      &:nth-of-type(4)::after {
-        content: "Session Token: Active Encrypted JWT Bearer";
+        &.mono {
+          font-family: ui-monospace, SFMono-Regular, monospace;
+          letter-spacing: 0.03em;
+          color: #1e3a8a;
+          font-weight: 700;
+        }
       }
     }
   }

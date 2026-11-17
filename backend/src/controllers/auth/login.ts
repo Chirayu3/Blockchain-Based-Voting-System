@@ -66,7 +66,7 @@ export default async (req: Request, res: Response) => {
     email: user.email,
     voterId: user.voterId,
     admin: true,
-    verified: Boolean(user.verified),
+    verified: Boolean(user.verified || user.registrationStatus === "APPROVED"),
     emailVerified: Boolean(user.emailVerified),
     isActive: Boolean(user.isActive),
   };

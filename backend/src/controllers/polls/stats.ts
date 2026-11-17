@@ -1,20 +1,49 @@
 import { Response } from "express";
 import { AuthenticatedRequest } from "../../middlewares/auth";
-import { User } from "../../entity/User";
+import { User, RegistrationStatus } from "../../entity/User";
 import { Poll } from "../../entity/Poll";
 import { Transaction } from "../../entity/Transaction";
 import ElectionContract from "../../web3";
 
 export default async (req: AuthenticatedRequest, res: Response) => {
   try {
-    // 1. Registered Voters (non-admins)
+    // 1. Registered Voters (non-admins) and Registration Approval Telemetry
     const totalVoters = await User.count({ where: { admin: false } });
     const verifiedVoters = await User.count({
       where: { admin: false, verified: true },
     });
     const pendingApprovals = await User.count({
-      where: { admin: false, verified: false },
+      where: { admin: false, registrationStatus: RegistrationStatus.PENDING_APPROVAL },
     });
+    const approvedRegistrations = await User.count({
+      where: { admin: false, registrationStatus: RegistrationStatus.APPROVED },
+    });
+    const rejectedRegistrations = await User.count({
+      where: { admin: false, registrationStatus: RegistrationStatus.REJECTED },
+    });
+
+    // 24-hour review SLA tracking
+    const pendingUsers = await User.find({
+      where: { admin: false, registrationStatus: RegistrationStatus.PENDING_APPROVAL },
+      select: ["id", "registrationSubmittedAt"],
+    });
+
+    const now = Date.now();
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+    const EIGHTEEN_HOURS = 18 * 60 * 60 * 1000;
+    let approachingDeadline = 0;
+    let overdue = 0;
+
+    for (const pu of pendingUsers) {
+      if (pu.registrationSubmittedAt) {
+        const elapsed = now - new Date(pu.registrationSubmittedAt).getTime();
+        if (elapsed >= TWENTY_FOUR_HOURS) {
+          overdue += 1;
+        } else if (elapsed >= EIGHTEEN_HOURS) {
+          approachingDeadline += 1;
+        }
+      }
+    }
 
     // 2. Current smart contract telemetry & votes (Blockchain is the source of truth)
     let blockchainVotesCount = 0;
@@ -199,6 +228,10 @@ export default async (req: AuthenticatedRequest, res: Response) => {
         totalRegistered: totalVoters,
         verified: verifiedVoters,
         pendingApprovals,
+        approved: approvedRegistrations,
+        rejected: rejectedRegistrations,
+        approachingDeadline,
+        overdue,
       },
       electionStats: {
         total: totalElections,

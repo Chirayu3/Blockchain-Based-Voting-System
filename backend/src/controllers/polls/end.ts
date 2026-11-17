@@ -4,21 +4,26 @@ import memoryCache from "memory-cache";
 import { Poll } from "../../entity/Poll";
 
 export default async (_: Request, res: Response) => {
-  const accounts = await web3.eth.getAccounts();
-  const instance = await ElectionContract.deployed();
+  try {
+    const accounts = await web3.eth.getAccounts();
+    const instance = await ElectionContract.deployed();
 
-  const status = await instance.getStatus();
+    const status = await instance.getStatus();
 
-  if (status !== "running") return res.status(400).send("Election not started");
+    if (status !== "running") return res.status(400).send("Election not started");
 
-  await instance.endElection({ from: accounts[0] });
+    await instance.endElection({ from: accounts[0], gas: 6721975 });
 
-  // Update MySQL status
-  await Poll.update({ status: "running" }, { status: "finished" });
+    // Update MySQL status
+    await Poll.update({ status: "running" }, { status: "finished" });
 
-  const votes = await instance.getVotes();
+    const votes = await instance.getVotes();
 
-  memoryCache.clear();
+    memoryCache.clear();
 
-  return res.send({ votes });
+    return res.send({ votes });
+  } catch (err: any) {
+    console.error("[Poll End Error]:", err);
+    return res.status(500).send(err.message || "Failed to end election.");
+  }
 };

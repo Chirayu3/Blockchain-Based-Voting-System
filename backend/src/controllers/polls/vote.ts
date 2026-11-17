@@ -1,14 +1,17 @@
 import { Response } from "express";
 import ElectionContract, { web3 } from "../../web3";
 import * as yup from "yup";
+import { getConnection } from "typeorm";
 import { AuthenticatedRequest } from "../../middlewares/auth";
 import { Poll } from "../../entity/Poll";
 import { Transaction } from "../../entity/Transaction";
 import { User } from "../../entity/User";
+import { VotingAuthorization } from "../../entity/VotingAuthorization";
+import { hashToken } from "../../utils/biometricCrypto";
 
 const checkSchema = yup.object({
   body: yup.object({
-    id: yup.string().required(),
+    id: yup.string().optional(),
   }),
 });
 
@@ -22,22 +25,38 @@ export const checkVoteability = async (
     return res.status(400).send({ error });
   }
 
-  const instance = await ElectionContract.deployed();
-  const voters: Array<any> = await instance.getVoters();
-  const status: "not-started" | "running" | "finished" =
-    await instance.getStatus();
+  // Derive voter database ID from authenticated session if available, else fallback to body for public queries
+  const voterIdStr = req.user ? req.user.id.toString() : req.body.id;
+  if (!voterIdStr) {
+    return res.status(400).send("Voter identity required");
+  }
 
-  if (status !== "running") return res.status(400).send("election not running");
-  if (voters.includes(req.body.id)) return res.send("already-voted");
+  try {
+    const instance = await ElectionContract.deployed();
+    const status: "not-started" | "running" | "finished" =
+      await instance.getStatus();
 
-  return res.send("not-voted");
+    if (status !== "running") return res.send("not-running");
+    const voters: Array<any> = await instance.getVoters();
+    if (voters.includes(voterIdStr)) return res.send("already-voted");
+
+    return res.send("not-voted");
+  } catch (err: any) {
+    console.warn("[Check Voteability] Contract check failed:", err.message);
+    return res.send("not-running");
+  }
 };
 
 const schema = yup.object({
   body: yup.object({
-    id: yup.string().required(),
-    name: yup.string().min(3).required(),
-    candidate: yup.string().min(3).required(),
+    candidate: yup.string().trim().min(2, "Candidate name must be at least 2 characters").required("Candidate is required"),
+    votingAuthorizationToken: yup
+      .string()
+      .trim()
+      .required("Biometric voting authorization token is required to cast a ballot"),
+    // Optional client-supplied fields maintained for backwards protocol compatibility
+    id: yup.string().optional(),
+    name: yup.string().optional(),
   }),
 });
 
@@ -48,15 +67,22 @@ export default async (req: AuthenticatedRequest, res: Response) => {
     return res.status(400).send(error.errors);
   }
 
-  // Voter identity verification
-  if (req.user && req.user.id.toString() !== req.body.id.toString()) {
+  if (!req.user) {
+    return res.status(401).send("Authentication required");
+  }
+
+  // Identity derivation: strictly derive voter ID and name from authenticated database user
+  const voterDbId = req.user.id;
+  const voterDbIdStr = voterDbId.toString();
+
+  // If client provided id, verify it matches the authenticated session
+  if (req.body.id && req.body.id.toString() !== voterDbIdStr) {
     return res
       .status(403)
       .send("Voter identity mismatch: you can only cast a ballot for yourself");
   }
 
-  const voterIdNum = Number(req.body.id);
-  const voter = await User.findOne({ where: { id: voterIdNum } });
+  const voter = await User.findOne({ where: { id: voterDbId } });
   if (!voter) {
     return res.status(404).send("Voter not found");
   }
@@ -66,6 +92,21 @@ export default async (req: AuthenticatedRequest, res: Response) => {
   if (!voter.emailVerified) {
     return res.status(403).send("Voter account email is not verified");
   }
+  const isApproved = Boolean(voter.verified || voter.registrationStatus === "APPROVED");
+  if (!isApproved) {
+    return res.status(403).send("Voter account has not received administrator approval");
+  }
+
+  const voterName = voter.name;
+  const candidateName = req.body.candidate.trim();
+  const rawAuthToken = req.body.votingAuthorizationToken;
+  const tokenHash = hashToken(rawAuthToken);
+
+  // Check active election in MySQL
+  let currentPoll = await Poll.findOne({
+    where: { status: "running" },
+    order: { id: "DESC" },
+  });
 
   const accounts = await web3.eth.getAccounts();
   const instance = await ElectionContract.deployed();
@@ -75,52 +116,145 @@ export default async (req: AuthenticatedRequest, res: Response) => {
     return res.status(400).send("Election is not currently active");
   }
 
-  const voters: Array<any> = await instance.getVoters();
   const candidates: Array<any> = await instance.getCandidates();
-
-  if (voters.includes(req.body.id)) {
-    return res.status(400).send("Already voted in this election");
-  }
-
-  if (!candidates.includes(req.body.candidate)) {
+  if (!candidates.includes(candidateName)) {
     return res.status(400).send("Candidate does not exist in this election");
   }
 
-  // Check active poll in database
-  let currentPoll = await Poll.findOne({
-    where: { status: "running" },
-    order: { id: "DESC" },
-  });
+  const onChainVoters: Array<any> = await instance.getVoters();
+  if (onChainVoters.includes(voterDbIdStr) || (voter.voterId && onChainVoters.includes(voter.voterId))) {
+    return res.status(400).send("Already voted in this election according to blockchain records");
+  }
 
   // Check if a transaction already exists for this voter and election in MySQL
   if (currentPoll) {
     const existingTx = await Transaction.findOne({
-      where: { voterId: voterIdNum, electionId: currentPoll.id },
+      where: { voterId: voterDbId, electionId: currentPoll.id },
     });
     if (existingTx) {
       return res.status(400).send("A transaction record already exists for this ballot");
     }
   }
 
-  // Record vote on Ethereum Blockchain first (Blockchain is the source of truth)
+  // Verify and lock voting authorization token atomically
+  const connection = getConnection();
+  const queryRunner = connection.createQueryRunner();
+  await queryRunner.connect();
+  await queryRunner.startTransaction();
+
+  let authorization: VotingAuthorization;
+  try {
+    const foundAuth = await queryRunner.manager
+      .createQueryBuilder(VotingAuthorization, "auth")
+      .setLock("pessimistic_write")
+      .where("auth.authorizationTokenHash = :tokenHash", { tokenHash })
+      .getOne();
+
+    if (!foundAuth) {
+      await queryRunner.rollbackTransaction();
+      return res.status(403).send("Invalid or missing biometric voting authorization.");
+    }
+
+    if (foundAuth.status !== "issued") {
+      await queryRunner.rollbackTransaction();
+      return res
+        .status(403)
+        .send(`Voting authorization token is no longer valid (status: ${foundAuth.status}).`);
+    }
+
+    if (foundAuth.userId !== voterDbId) {
+      await queryRunner.rollbackTransaction();
+      return res.status(403).send("Voting authorization belongs to a different voter.");
+    }
+
+    if (currentPoll && foundAuth.electionId !== currentPoll.id) {
+      await queryRunner.rollbackTransaction();
+      return res.status(403).send("Voting authorization was issued for a different election.");
+    }
+
+    if (new Date(foundAuth.expiresAt) < new Date()) {
+      foundAuth.status = "expired";
+      await queryRunner.manager.save(foundAuth);
+      await queryRunner.commitTransaction();
+      return res.status(403).send("Voting authorization token has expired. Please re-authenticate your face.");
+    }
+
+    // Atomically transition status to processing before invoking blockchain
+    foundAuth.status = "processing";
+    authorization = await queryRunner.manager.save(foundAuth);
+    await queryRunner.commitTransaction();
+  } catch (authError) {
+    await queryRunner.rollbackTransaction();
+    return res.status(500).send("Failed to lock voting authorization token");
+  } finally {
+    await queryRunner.release();
+  }
+
+  // Record vote on Ethereum Blockchain
   let result: any;
+  let blockchainError: any = null;
+
   try {
     result = await instance.vote(
-      req.body.id,
-      req.body.name,
-      req.body.candidate,
+      voterDbIdStr,
+      voterName,
+      candidateName,
       {
         from: accounts[0],
+        gas: 6721975,
       }
     );
   } catch (error: any) {
+    blockchainError = error;
     console.error("Smart contract vote error:", error);
-    return res
-      .status(400)
-      .send(error.reason || error.message || "Failed to record vote on blockchain");
   }
 
-  // Only AFTER blockchain vote succeeds, ensure MySQL has active poll & record transaction
+  // Handle blockchain outcome and timeout reconciliation
+  if (blockchainError) {
+    // Reconcile: Query blockchain state to determine if transaction actually succeeded despite client error/timeout
+    let reconciledSuccess = false;
+    try {
+      const refreshedVoters: Array<any> = await instance.getVoters();
+      if (refreshedVoters.includes(voterDbIdStr)) {
+        reconciledSuccess = true;
+      }
+    } catch (checkErr) {
+      console.warn("Could not query blockchain for reconciliation:", checkErr);
+    }
+
+    if (!reconciledSuccess) {
+      // Mark authorization failed so token cannot be reused
+      await VotingAuthorization.update(
+        { id: authorization.id },
+        { status: "failed" }
+      );
+      return res
+        .status(400)
+        .send(
+          blockchainError.reason ||
+            blockchainError.message ||
+            "Failed to record vote on blockchain. State reconciled: vote was not cast."
+        );
+    }
+
+    // If reconciled as successfully recorded on-chain:
+    await VotingAuthorization.update(
+      { id: authorization.id },
+      { status: "consumed", consumedAt: new Date() }
+    );
+  } else {
+    // Normal success: mark authorization consumed
+    await VotingAuthorization.update(
+      { id: authorization.id },
+      {
+        status: "consumed",
+        consumedAt: new Date(),
+        transactionHash: result?.receipt?.transactionHash || result?.tx || null,
+      }
+    );
+  }
+
+  // Ensure MySQL active poll exists
   if (!currentPoll) {
     const electionName = await instance.getElectionName();
     const electionDesc = await instance.getElectionDescription();
@@ -132,14 +266,15 @@ export default async (req: AuthenticatedRequest, res: Response) => {
   }
 
   // Extract Web3 transaction receipt
-  const receipt = result.receipt || {};
-  const txHash = receipt.transactionHash || result.tx;
-  const blockNumber = Number(receipt.blockNumber);
+  const receipt = result?.receipt || {};
+  const txHash = receipt.transactionHash || result?.tx || "0xRECONCILED";
+  const blockNumber = Number(receipt.blockNumber) || 0;
   const gasUsed = Number(receipt.gasUsed) || 0;
   const txStatus =
     receipt.status === true ||
     receipt.status === 1 ||
-    receipt.status === "0x1"
+    receipt.status === "0x1" ||
+    txHash !== "0xRECONCILED"
       ? "success"
       : "failed";
 
@@ -156,7 +291,7 @@ export default async (req: AuthenticatedRequest, res: Response) => {
     }
   }
 
-  // Save transaction tracking record in MySQL (preventing duplicates)
+  // Save transaction tracking record in MySQL
   try {
     const existingByHash = await Transaction.findOne({
       where: { transactionHash: txHash },
@@ -164,9 +299,9 @@ export default async (req: AuthenticatedRequest, res: Response) => {
     if (!existingByHash) {
       const transaction = new Transaction();
       transaction.transactionHash = txHash;
-      transaction.voterId = voterIdNum;
+      transaction.voterId = voterDbId;
       transaction.electionId = currentPoll.id;
-      transaction.candidateName = req.body.candidate;
+      transaction.candidateName = candidateName;
       transaction.blockNumber = blockNumber;
       transaction.gasUsed = gasUsed;
       transaction.status = txStatus;
@@ -185,7 +320,7 @@ export default async (req: AuthenticatedRequest, res: Response) => {
       gasUsed,
       timestamp: blockTimestamp,
       status: txStatus,
-      candidate: req.body.candidate,
+      candidate: candidateName,
     },
   });
 };

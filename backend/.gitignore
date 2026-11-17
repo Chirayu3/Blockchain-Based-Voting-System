@@ -1,9 +1,13 @@
-node_modules
-dist
+node_modules/
+dist/
 .env
-.env.local
+.env.*
+!.env.example
 backup_*.json
 *.log
+*.tmp
+*.temp
+coverage/
 
 # Ignore build directory except deployed Truffle contract artifacts
 build/*

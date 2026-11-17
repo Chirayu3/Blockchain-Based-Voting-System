@@ -1,32 +1,160 @@
-# Dependencies
-node_modules/
+# ==============================================================================
+# Blockchain-Based Voting System (BBVS) - Git Ignore Configuration
+# Covers: Node.js/Express, React (CRA/TS), Python/FastAPI/ONNX, Solidity/Truffle
+# ==============================================================================
 
-# Environment files
+# ------------------------------------------------------------------------------
+# Dependencies
+# ------------------------------------------------------------------------------
+node_modules/
+*/node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# ------------------------------------------------------------------------------
+# Environment Variables & Secrets
+# ------------------------------------------------------------------------------
 .env
+.env.*
 .env.local
 .env.*.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+# Preserve configuration templates
+!.env.example
+!.env.template
 
-# Logs and runtime data
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Secret Keys & Certificates
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
 
-# OS and IDE files
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
+# ------------------------------------------------------------------------------
+# Python & Virtual Environments
+# ------------------------------------------------------------------------------
+__pycache__/
+*/__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+.mypy_cache/
+.ruff_cache/
 
-# Database dumps
-backup_*.json
+# ------------------------------------------------------------------------------
+# Testing & Code Coverage
+# ------------------------------------------------------------------------------
+coverage/
+*/coverage/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+*/.pytest_cache/
+.hypothesis/
+*.cover
+nosetests.xml
+coverage.xml
 
-# Build outputs
-/build/
-frontend/build/
+# ------------------------------------------------------------------------------
+# Biometric & Computer Vision / ML Models
+# Downloaded on-demand via biometric_service/download_models.py
+# ------------------------------------------------------------------------------
+*.onnx
+*.pt
+*.pth
+*.tflite
+*.weights
+biometric_service/models/
+models/
+!biometric_service/models/.gitkeep
+
+# ------------------------------------------------------------------------------
+# Production Builds & Bundles
+# ------------------------------------------------------------------------------
+dist/
 backend/dist/
+frontend/build/
+build/
 
-# Truffle contract artifacts required by Web3 backend
+# Exception: Truffle contract ABI/metadata artifacts required by backend Web3
 !backend/build/
 !backend/build/contracts/
 !backend/build/contracts/*.json
+
+# ------------------------------------------------------------------------------
+# Database Dumps, Blockchain State & Temporary Backups
+# ------------------------------------------------------------------------------
+backup_*.json
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+.ganache/
+*.ganache
+
+# ------------------------------------------------------------------------------
+# Logs & Diagnostic Outputs
+# ------------------------------------------------------------------------------
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ------------------------------------------------------------------------------
+# Caches & Temporary Scratch Files
+# ------------------------------------------------------------------------------
+.eslintcache
+.stylelintcache
+*.tmp
+*.temp
+tmp/
+temp/
+scratch/
+
+# ------------------------------------------------------------------------------
+# Operating System & Editor Files
+# ------------------------------------------------------------------------------
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Editors & IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace

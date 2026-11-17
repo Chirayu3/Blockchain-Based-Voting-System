@@ -1,38 +1,31 @@
 import request from "supertest";
 import { createConnection, getConnection, Connection, IsNull } from "typeorm";
 import app from "../server";
-import { User } from "../entity/User";
+import { User, RegistrationStatus } from "../entity/User";
 import { OtpChallenge } from "../entity/OtpChallenge";
 import { EmailService } from "../services/email/EmailService";
 import { rateLimiter } from "../utils/rateLimiter";
 import { hashOtp } from "../utils/otpSecurity";
+import { recoverAdminPassword } from "../scripts/adminRecovery";
+import { generateUniqueVoterId } from "../utils/voterId";
 import bcrypt from "bcrypt";
 
 describe("Voter Registration & Email OTP Authentication Test Suite", () => {
   let connection: Connection;
   let sendRegEmailSpy: jest.SpyInstance;
+  let sendRegAckEmailSpy: jest.SpyInstance;
   let sendOtpEmailSpy: jest.SpyInstance;
 
   beforeAll(async () => {
     // Connect to database using ormconfig.js
     connection = await createConnection();
 
-    // Ensure known passwords for Liza (voter) and John (admin) for deterministic testing
-    const liza = await User.findOne({ where: { id: 2 } });
-    if (liza) {
-      liza.password = await bcrypt.hash("Password123!", 10);
-      await User.save(liza);
-    }
-
-    const john = await User.findOne({ where: { id: 1 } });
-    if (john) {
-      john.password = await bcrypt.hash("Password123!", 10);
-      await User.save(john);
-    }
-
     // Mock EmailService to prevent real emails during tests
     sendRegEmailSpy = jest
       .spyOn(EmailService, "sendRegistrationEmail")
+      .mockResolvedValue(true);
+    sendRegAckEmailSpy = jest
+      .spyOn(EmailService, "sendRegistrationAcknowledgementEmail")
       .mockResolvedValue(true);
     sendOtpEmailSpy = jest
       .spyOn(EmailService, "sendOtpEmail")
@@ -41,6 +34,7 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
 
   afterAll(async () => {
     sendRegEmailSpy.mockRestore();
+    sendRegAckEmailSpy.mockRestore();
     sendOtpEmailSpy.mockRestore();
     if (connection && connection.isConnected) {
       await connection.close();
@@ -50,13 +44,15 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
   beforeEach(async () => {
     rateLimiter.reset();
     sendRegEmailSpy.mockClear();
+    sendRegAckEmailSpy.mockClear();
     sendOtpEmailSpy.mockClear();
     sendRegEmailSpy.mockResolvedValue(true);
+    sendRegAckEmailSpy.mockResolvedValue(true);
     sendOtpEmailSpy.mockResolvedValue(true);
   });
 
   // 1. Successful voter registration
-  test("1. Successful voter registration: generates Voter ID and dispatches confirmation email", async () => {
+  test("1. Successful voter registration: creates pending approval user and dispatches acknowledgement email", async () => {
     const uniqueEmail = `testvoter_${Date.now()}@example.com`;
     const uniqueCit = `CIT_${Date.now()}`;
 
@@ -71,16 +67,19 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
 
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
-    expect(res.body.voterId).toMatch(/^BBVS-\d{4}-\d{6}$/);
+    expect(res.body.voterId).toBeUndefined();
+    expect(res.body.registrationStatus).toBe(RegistrationStatus.PENDING_APPROVAL);
     expect(res.body.emailDelivery.sent).toBe(true);
 
     const dbUser = await User.findOne({ where: { email: uniqueEmail } });
     expect(dbUser).toBeDefined();
+    expect(dbUser?.voterId).toBeNull();
+    expect(dbUser?.registrationStatus).toBe(RegistrationStatus.PENDING_APPROVAL);
     expect(dbUser?.admin).toBe(false);
     expect(dbUser?.verified).toBe(false); // Legacy admin verification
     expect(dbUser?.emailVerified).toBe(false); // Email ownership
     expect(dbUser?.isActive).toBe(true);
-    expect(sendRegEmailSpy).toHaveBeenCalledTimes(1);
+    expect(sendRegAckEmailSpy).toHaveBeenCalledTimes(1);
   });
 
   // 2. Duplicate email rejection
@@ -122,23 +121,16 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
   // 4. Collision-safe Voter ID generation format
   test("4. Collision-safe Voter ID matches BBVS-YYYY-###### format", async () => {
     const currentYear = new Date().getFullYear();
-    const res = await request(app)
-      .post("/auth/signup")
-      .send({
-        name: "Format Test Voter",
-        email: `format_${Date.now()}@example.com`,
-        citizenshipNumber: `CIT_FMT_${Date.now()}`,
-        password: "Password123!",
-      });
+    const voterId = await generateUniqueVoterId();
 
-    expect(res.status).toBe(201);
-    expect(res.body.voterId.startsWith(`BBVS-${currentYear}-`)).toBe(true);
-    expect(res.body.voterId).toHaveLength(16);
+    expect(voterId.startsWith(`BBVS-${currentYear}-`)).toBe(true);
+    expect(voterId).toHaveLength(16);
+    expect(voterId).toMatch(/^BBVS-\d{4}-\d{6}$/);
   });
 
   // 5. SMTP registration failure after account creation
-  test("5. Registration survives SMTP failure: user saved and Voter ID returned with non-fatal status", async () => {
-    sendRegEmailSpy.mockResolvedValueOnce(false); // Simulate SMTP failure
+  test("5. Registration survives SMTP failure: user saved and acknowledgement status returned", async () => {
+    sendRegAckEmailSpy.mockResolvedValueOnce(false); // Simulate SMTP failure
     const email = `smtp_fail_${Date.now()}@example.com`;
 
     const res = await request(app)
@@ -152,13 +144,14 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
 
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
-    expect(res.body.voterId).toBeDefined();
+    expect(res.body.voterId).toBeUndefined();
     expect(res.body.emailDelivery.sent).toBe(false);
 
     // Verify user is persisted in DB despite email failure
     const dbUser = await User.findOne({ where: { email } });
     expect(dbUser).toBeDefined();
-    expect(dbUser?.voterId).toBe(res.body.voterId);
+    expect(dbUser?.voterId).toBeNull();
+    expect(dbUser?.registrationStatus).toBe(RegistrationStatus.PENDING_APPROVAL);
   });
 
   // 6. Resend registration confirmation email
@@ -174,12 +167,12 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
 
   // 7. Correct Voter ID and password request OTP
   test("7. Correct Voter ID and password returns challengeId and masked email", async () => {
-    // Use legacy user Liza (id: 2, voterId: 'BBVS-2026-000002')
+    // Use legacy user Liza (id: 2, voterId: 'BBVS-2026-000002') with original password
     const res = await request(app)
       .post("/auth/voter/request-otp")
       .send({
         voterId: "BBVS-2026-000002",
-        password: "Password123!",
+        password: "liza@gmail.com",
       });
 
     expect(res.status).toBe(200);
@@ -249,7 +242,7 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
       .post("/auth/voter/request-otp")
       .send({
         voterId: "BBVS-2026-000001",
-        password: "Password123!",
+        password: "john@gmail.com",
       });
 
     expect(res.status).toBe(403);
@@ -269,6 +262,7 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
     voter.verified = false; // Legacy admin verification
     voter.emailVerified = false;
     voter.isActive = true;
+    voter.registrationStatus = RegistrationStatus.APPROVED;
     await User.save(voter);
 
     // Request OTP
@@ -475,7 +469,7 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
       .post("/auth/voter/request-otp")
       .send({
         voterId: "BBVS-2026-000002",
-        password: "Password123!",
+        password: "liza@gmail.com",
       });
 
     expect(res.status).toBe(500);
@@ -495,7 +489,7 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
       .post("/auth/login")
       .send({
         email: "john@gmail.com",
-        password: "Password123!",
+        password: "john@gmail.com",
         portal: "admin",
       });
 
@@ -519,5 +513,233 @@ describe("Voter Registration & Email OTP Authentication Test Suite", () => {
 
     expect(logoutRes.status).toBe(200);
     expect(logoutRes.headers["set-cookie"][0]).toContain("refreshToken=;");
+  });
+
+  // =========================================================================
+  // Administrator Authentication & Regression Tests
+  // =========================================================================
+
+  // 21. Existing administrator can log in using original email and password
+  test("21. Existing administrator can log in using original email and password", async () => {
+    const res = await request(app)
+      .post("/auth/login")
+      .send({
+        email: "john@gmail.com",
+        password: "john@gmail.com",
+        portal: "admin",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.user).toBeDefined();
+    expect(res.body.user.email).toBe("john@gmail.com");
+    expect(res.body.user.admin).toBe(true);
+    expect(res.body.accessToken).toBeDefined();
+  });
+
+  // 22. Incorrect administrator password is rejected
+  test("22. Incorrect administrator password is rejected", async () => {
+    const res = await request(app)
+      .post("/auth/login")
+      .send({
+        email: "john@gmail.com",
+        password: "WrongAdminPassword!",
+        portal: "admin",
+      });
+
+    expect(res.status).toBe(401);
+    expect(res.text).toBe("Invalid email or password.");
+  });
+
+  // 23. Voter cannot log in through administrator authentication
+  test("23. Voter cannot log in through administrator authentication", async () => {
+    const res = await request(app)
+      .post("/auth/login")
+      .send({
+        email: "liza@gmail.com",
+        password: "liza@gmail.com",
+        portal: "admin",
+      });
+
+    expect(res.status).toBe(403);
+    expect(res.text).toContain("Voters must log in using their Voter ID");
+  });
+
+  // 24. Administrator cannot log in through voter OTP authentication
+  test("24. Administrator cannot log in through voter OTP authentication", async () => {
+    const res = await request(app)
+      .post("/auth/voter/request-otp")
+      .send({
+        voterId: "BBVS-2026-000001",
+        password: "john@gmail.com",
+      });
+
+    expect(res.status).toBe(403);
+    expect(res.text).toContain("Administrators must log in through the Admin Portal.");
+  });
+
+  // 25. Administrator with emailVerified = false can still use administrator login flow
+  test("25. Administrator with emailVerified = false can still use administrator login flow", async () => {
+    const admin = await User.findOne({ where: { email: "john@gmail.com" } });
+    expect(admin).toBeDefined();
+    expect(admin?.emailVerified).toBeFalsy();
+    expect(admin?.verified).toBeTruthy(); // Legacy admin verification
+
+    const res = await request(app)
+      .post("/auth/login")
+      .send({
+        email: "john@gmail.com",
+        password: "john@gmail.com",
+        portal: "admin",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.user.emailVerified).toBe(false);
+    expect(res.body.user.admin).toBe(true);
+  });
+
+  // 26. Inactive administrator is rejected
+  test("26. Inactive administrator is rejected", async () => {
+    const inactiveAdmin = new User();
+    inactiveAdmin.name = "Inactive Admin";
+    inactiveAdmin.email = `inactive_admin_${Date.now()}@example.com`;
+    inactiveAdmin.citizenshipNumber = `CIT_INACT_ADM_${Date.now()}`;
+    inactiveAdmin.voterId = `BBVS-2026-${Date.now().toString().slice(-6)}`;
+    inactiveAdmin.password = await bcrypt.hash("AdminPass123!", 10);
+    inactiveAdmin.admin = true;
+    inactiveAdmin.verified = true;
+    inactiveAdmin.emailVerified = false;
+    inactiveAdmin.isActive = false; // DEACTIVATED
+    await User.save(inactiveAdmin);
+
+    const res = await request(app)
+      .post("/auth/login")
+      .send({
+        email: inactiveAdmin.email,
+        password: "AdminPass123!",
+        portal: "admin",
+      });
+
+    expect(res.status).toBe(403);
+    expect(res.text).toContain("Account has been deactivated");
+  });
+
+  // 27. Admin JWT and refresh cookie are issued correctly
+  test("27. Admin JWT and refresh cookie are issued correctly", async () => {
+    const res = await request(app)
+      .post("/auth/login")
+      .send({
+        email: "john@gmail.com",
+        password: "john@gmail.com",
+        portal: "admin",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.accessToken).toBeDefined();
+
+    const rawCookies = res.headers["set-cookie"];
+    expect(rawCookies).toBeDefined();
+    const cookies: string[] = Array.isArray(rawCookies) ? rawCookies : [rawCookies as string];
+    const refreshCookie = cookies.find((c: string) => c.startsWith("refreshToken="));
+    expect(refreshCookie).toBeDefined();
+    expect(refreshCookie).toContain("HttpOnly");
+    expect(refreshCookie).toContain("SameSite=Lax");
+  });
+
+  // 28. Admin session restoration works
+  test("28. Admin session restoration works via /auth/check", async () => {
+    const loginRes = await request(app)
+      .post("/auth/login")
+      .send({
+        email: "john@gmail.com",
+        password: "john@gmail.com",
+        portal: "admin",
+      });
+
+    const cookie = loginRes.headers["set-cookie"];
+    const checkRes = await request(app)
+      .post("/auth/check")
+      .set("Cookie", cookie);
+
+    expect(checkRes.status).toBe(200);
+    expect(checkRes.body.user.email).toBe("john@gmail.com");
+    expect(checkRes.body.user.admin).toBe(true);
+    expect(checkRes.body.accessToken).toBeDefined();
+  });
+
+  // 29. Existing administrator password hash remains unchanged after voter migration
+  test("29. Existing administrator password hash remains unchanged after voter migration", async () => {
+    const admin = await User.findOne({ where: { email: "john@gmail.com" } });
+    expect(admin).toBeDefined();
+
+    // Verify bcrypt comparison with original password
+    const match = await bcrypt.compare("john@gmail.com", admin!.password);
+    expect(match).toBe(true);
+
+    // Verify hash matches the original pre-migration seed hash
+    const originalSeedHash = "$2b$10$6sdkothEwAguhA0FytsGF.gcWPmTDB5hosif6rGX5FFJK8PdBgRHu";
+    expect(admin!.password).toBe(originalSeedHash);
+  });
+
+  // 30. Voter OTP authentication continues working
+  test("30. Voter OTP authentication continues working end-to-end", async () => {
+    // Stage 1: Request OTP
+    let capturedOtp = "";
+    sendOtpEmailSpy.mockImplementationOnce(async (params) => {
+      capturedOtp = params.otp;
+      return true;
+    });
+
+    const reqRes = await request(app)
+      .post("/auth/voter/request-otp")
+      .send({
+        voterId: "BBVS-2026-000002",
+        password: "liza@gmail.com",
+      });
+
+    expect(reqRes.status).toBe(200);
+    expect(reqRes.body.challengeId).toBeDefined();
+    expect(capturedOtp).toMatch(/^\d{6}$/);
+
+    // Stage 2: Verify OTP
+    const verifyRes = await request(app)
+      .post("/auth/voter/verify-otp")
+      .send({
+        challengeId: reqRes.body.challengeId,
+        otp: capturedOtp,
+      });
+
+    expect(verifyRes.status).toBe(200);
+    expect(verifyRes.body.success).toBe(true);
+    expect(verifyRes.body.user.voterId).toBe("BBVS-2026-000002");
+    expect(verifyRes.body.accessToken).toBeDefined();
+    expect(verifyRes.headers["set-cookie"]).toBeDefined();
+  });
+
+  // 31. Controlled administrator password recovery functions securely
+  test("31. Controlled administrator password recovery functions securely without corrupting existing accounts", async () => {
+    const tempAdmin = new User();
+    tempAdmin.name = "Recovery Admin";
+    tempAdmin.email = `temp_admin_${Date.now()}@example.com`;
+    tempAdmin.citizenshipNumber = `CIT_REC_${Date.now()}`;
+    tempAdmin.voterId = `BBVS-2026-${Date.now().toString().slice(-6)}`;
+    tempAdmin.password = await bcrypt.hash("OldPass123!", 10);
+    tempAdmin.admin = true;
+    tempAdmin.verified = true;
+    tempAdmin.emailVerified = false;
+    tempAdmin.isActive = true;
+    await User.save(tempAdmin);
+
+    const result = await recoverAdminPassword(tempAdmin.email, "NewSecurePassword456!");
+    expect(result.success).toBe(true);
+
+    const updated = await User.findOne({ where: { id: tempAdmin.id } });
+    const matchesNew = await bcrypt.compare("NewSecurePassword456!", updated!.password);
+    expect(matchesNew).toBe(true);
+    expect(updated?.admin).toBe(true);
+
+    // Verify John's password remains completely untouched
+    const john = await User.findOne({ where: { email: "john@gmail.com" } });
+    const johnStillOriginal = await bcrypt.compare("john@gmail.com", john!.password);
+    expect(johnStillOriginal).toBe(true);
   });
 });

@@ -1,5 +1,4 @@
 import React from "react";
-import Chart from "./Chart";
 
 interface PanelProps {
   name: string;
@@ -10,8 +9,8 @@ interface PanelProps {
 const Panel = (props: PanelProps) => {
   return (
     <div className="polls-container">
-      <span className="title-small">{props.name}</span>
-      <span className="text-normal">{props.description}</span>
+      <h2 className="title-small">{props.name}</h2>
+      <p className="text-normal">{props.description}</p>
 
       <div className="votes-wrapper">{props.children}</div>
     </div>
