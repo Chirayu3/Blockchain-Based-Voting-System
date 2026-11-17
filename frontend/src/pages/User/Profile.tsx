@@ -90,93 +90,103 @@ const Profile = (props: RouteProps) => {
         <div className="person-icon">
           <i className="bi bi-person-circle"></i>
         </div>
-        <div className="text-normal username">{authContext.name}</div>
+        <div className="username">{authContext.name || "User"}</div>
+        <div
+          className={`role-badge ${authContext.isAdmin ? "admin" : "voter"}`}
+        >
+          <i className={`bi ${authContext.isAdmin ? "bi-shield-lock-fill" : "bi-patch-check-fill"}`}></i>
+          <span>{authContext.isAdmin ? "System Administrator" : "Verified Blockchain Voter"}</span>
+        </div>
+
         {authContext.voterId && (
           <div
             style={{
               fontSize: "0.85rem",
               fontFamily: "monospace",
-              color: "#64748b",
-              marginTop: 4,
+              color: "#475569",
+              background: "#f1f5f9",
+              padding: "4px 10px",
+              borderRadius: "6px",
+              marginBottom: 16,
+              fontWeight: 600,
             }}
           >
             {authContext.voterId}
           </div>
         )}
-        <button onClick={authContext.logout} className="button-primary" style={{ marginTop: 16 }}>
-          Logout
+
+        <button
+          type="button"
+          onClick={authContext.logout}
+          className="logout-button"
+        >
+          <i className="bi bi-box-arrow-right"></i> Sign Out
         </button>
       </div>
 
       <div className="right-panel">
-        <span className="title-small">Voter Credentials & Security</span>
+        <div className="title-small">
+          <i className="bi bi-person-vcard-fill"></i>
+          <span>Voter Credentials & Security Status</span>
+        </div>
 
         {actionMessage && (
           <div
             style={{
-              margin: "16px 0",
-              padding: "10px 14px",
-              borderRadius: 6,
-              fontSize: "0.85rem",
+              margin: "0 0 16px 0",
+              padding: "12px 16px",
+              borderRadius: 8,
+              fontSize: "0.875rem",
               background: actionMessage.type === "success" ? "#f0fdf4" : "#fef2f2",
               border: `1px solid ${actionMessage.type === "success" ? "#bbf7d0" : "#fee2e2"}`,
               color: actionMessage.type === "success" ? "#166534" : "#991b1b",
               display: "flex",
               alignItems: "center",
-              gap: 8,
+              gap: 10,
             }}
           >
             <i
-              className={actionMessage.type === "success" ? "bi bi-check-circle" : "bi bi-exclamation-circle"}
+              className={actionMessage.type === "success" ? "bi bi-check-circle-fill" : "bi bi-exclamation-octagon-fill"}
+              style={{ fontSize: "1.1rem" }}
             ></i>
             <span>{actionMessage.text}</span>
           </div>
         )}
 
-        <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ padding: "12px 16px", background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0" }}>
-            <div style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
-              Full Name
-            </div>
-            <div style={{ fontSize: "1rem", color: "#1e293b", fontWeight: 600, marginTop: 4 }}>
-              {authContext.name || "N/A"}
-            </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div className="credential-card">
+            <div className="card-label">Official Registered Name</div>
+            <div className="card-value">{authContext.name || "N/A"}</div>
           </div>
 
-          <div style={{ padding: "12px 16px", background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0" }}>
-            <div style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
-              Official Voter ID
-            </div>
-            <div style={{ fontSize: "1.1rem", color: "#1e293b", fontWeight: 700, fontFamily: "monospace", marginTop: 4 }}>
-              {authContext.voterId || "BBVS-OFFICIAL"}
-            </div>
+          <div className="credential-card">
+            <div className="card-label">Assigned Permanent Voter ID</div>
+            <div className="card-value mono">{authContext.voterId || "BBVS-OFFICIAL"}</div>
           </div>
 
-          <div style={{ padding: "12px 16px", background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0" }}>
-            <div style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
-              Registered Email
-            </div>
-            <div style={{ fontSize: "0.95rem", color: "#1e293b", marginTop: 4 }}>
-              {authContext.email || "Registered via system"}
-            </div>
+          <div className="credential-card">
+            <div className="card-label">Registered Contact Email</div>
+            <div className="card-value">{authContext.email || "Registered via election ledger"}</div>
           </div>
 
-          <div style={{ padding: "12px 16px", background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0" }}>
-            <div style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
-              Account Verification Status
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+          <div className="credential-card">
+            <div className="card-label">Verification & Authorization Status</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
               <span
                 style={{
                   background: authContext.emailVerified ? "#f0fdf4" : "#fef2f2",
                   color: authContext.emailVerified ? "#16a34a" : "#dc2626",
-                  padding: "3px 10px",
+                  border: `1px solid ${authContext.emailVerified ? "#bbf7d0" : "#fecaca"}`,
+                  padding: "4px 12px",
                   borderRadius: 9999,
                   fontSize: "0.8rem",
                   fontWeight: 600,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
                 }}
               >
-                <i className={authContext.emailVerified ? "bi bi-shield-check" : "bi bi-shield-x"}></i>{" "}
+                <i className={authContext.emailVerified ? "bi bi-shield-check" : "bi bi-shield-x"}></i>
                 {authContext.emailVerified ? "Email OTP Verified" : "Email Unverified"}
               </span>
 
@@ -184,124 +194,115 @@ const Profile = (props: RouteProps) => {
                 style={{
                   background: authContext.verified ? "#f0fdf4" : "#fffbeb",
                   color: authContext.verified ? "#16a34a" : "#b45309",
-                  padding: "3px 10px",
+                  border: `1px solid ${authContext.verified ? "#bbf7d0" : "#fde68a"}`,
+                  padding: "4px 12px",
                   borderRadius: 9999,
                   fontSize: "0.8rem",
                   fontWeight: 600,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
                 }}
               >
-                <i className={authContext.verified ? "bi bi-person-check" : "bi bi-hourglass-split"}></i>{" "}
-                {authContext.verified ? "Administrator Approved" : "Pending Admin Approval"}
+                <i className={authContext.verified ? "bi bi-person-check" : "bi bi-hourglass-split"}></i>
+                {authContext.verified ? "Administrator Approved" : "Pending Admin Review"}
               </span>
 
               <span
                 style={{
                   background: authContext.isAdmin ? "#eff6ff" : "#f1f5f9",
                   color: authContext.isAdmin ? "#2563eb" : "#475569",
-                  padding: "3px 10px",
+                  border: `1px solid ${authContext.isAdmin ? "#bfdbfe" : "#e2e8f0"}`,
+                  padding: "4px 12px",
                   borderRadius: 9999,
                   fontSize: "0.8rem",
                   fontWeight: 600,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
                 }}
               >
-                {authContext.isAdmin ? "Administrator" : "Electorate Voter"}
+                <i className={`bi ${authContext.isAdmin ? "bi-shield-lock" : "bi-person"}`}></i>
+                {authContext.isAdmin ? "Administrator" : "Electorate Citizen"}
               </span>
             </div>
           </div>
 
-          {/* Biometric Security Panel */}
+          {/* Biometric Face Security Panel */}
           <div
             style={{
-              padding: "16px",
+              padding: "18px 20px",
               background: "#ffffff",
-              borderRadius: 8,
-              border: "1px solid #cbd5e1",
-              boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)",
+              borderRadius: 12,
+              border: "1.5px solid #cbd5e1",
+              boxShadow: "0 2px 6px rgba(15, 23, 42, 0.05)",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <i className="bi bi-camera-fill" style={{ fontSize: "1.2rem", color: "#2563eb" }}></i>
-                <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "#1e293b" }}>
-                  Biometric Face Security
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <i className="bi bi-person-bounding-box" style={{ fontSize: "1.35rem", color: "#2563eb" }}></i>
+                <div>
+                  <div style={{ fontSize: "1rem", fontWeight: 700, color: "#0f172a" }}>
+                    Biometric Facial Authentication
+                  </div>
+                  <div style={{ fontSize: "0.8rem", color: "#64748b" }}>
+                    Encrypted with AES-256-GCM authenticated cipher
+                  </div>
                 </div>
               </div>
+
               <span
                 style={{
                   background: bioStatus.hasEnrolled ? "#f0fdf4" : "#f8fafc",
                   color: bioStatus.hasEnrolled ? "#16a34a" : "#64748b",
                   border: `1px solid ${bioStatus.hasEnrolled ? "#bbf7d0" : "#e2e8f0"}`,
-                  padding: "3px 10px",
+                  padding: "4px 12px",
                   borderRadius: 9999,
                   fontSize: "0.775rem",
                   fontWeight: 700,
                   textTransform: "uppercase",
+                  letterSpacing: "0.04em",
                 }}
               >
                 {bioStatus.loading
                   ? "Checking..."
                   : bioStatus.hasEnrolled
-                  ? "✓ Enrolled (Active)"
+                  ? "✓ Enrolled & Active"
                   : "Not Enrolled"}
               </span>
             </div>
 
-            <div style={{ fontSize: "0.8rem", color: "#64748b", marginTop: 8, lineHeight: 1.4 }}>
-              Register your face to prepare for secure voting. Templates are encrypted with authenticated AES-256-GCM.
-            </div>
-
-            {/* Informational Message about decoupled enrollment vs voting */}
-            {!authContext.verified && (
-              <div
-                style={{
-                  marginTop: 10,
-                  background: "#f0f9ff",
-                  border: "1px solid #bae6fd",
-                  borderRadius: 6,
-                  padding: "8px 12px",
-                  fontSize: "0.8rem",
-                  color: "#0369a1",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-              >
-                <i className="bi bi-info-circle-fill"></i>
-                <span>
-                  Your biometric enrollment can be completed independently. Casting a vote will become available after administrator approval and successful biometric verification.
-                </span>
-              </div>
-            )}
-
             {bioStatus.hasEnrolled && (
               <div
                 style={{
-                  marginTop: 12,
-                  padding: "10px",
+                  marginTop: 14,
+                  padding: "12px 14px",
                   background: "#f8fafc",
-                  borderRadius: 6,
-                  fontSize: "0.8rem",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 8,
+                  fontSize: "0.825rem",
                   color: "#334155",
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
-                  gap: 8,
+                  gap: 10,
                 }}
               >
                 <div>
-                  <strong>Enrolled On:</strong> {formatDate(bioStatus.enrolledAt)}
+                  <strong style={{ color: "#475569" }}>Enrolled On:</strong>{" "}
+                  <span>{formatDate(bioStatus.enrolledAt)}</span>
                 </div>
                 <div>
-                  <strong>Last Verified:</strong> {formatDate(bioStatus.lastVerifiedAt)}
+                  <strong style={{ color: "#475569" }}>Last Verified:</strong>{" "}
+                  <span>{formatDate(bioStatus.lastVerifiedAt)}</span>
                 </div>
                 {bioStatus.modelIdentifier && (
-                  <div style={{ gridColumn: "span 2", fontSize: "0.75rem", color: "#64748b" }}>
-                    Engine: {bioStatus.modelIdentifier} (128-d L2-normalized)
+                  <div style={{ gridColumn: "span 2", fontSize: "0.775rem", color: "#64748b" }}>
+                    Biometric Model: {bioStatus.modelIdentifier} (128-d L2-normalized embedding)
                   </div>
                 )}
               </div>
             )}
 
-            {/* Actions */}
             <div style={{ marginTop: 16, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
               {!authContext.emailVerified ? (
                 <div
@@ -310,12 +311,12 @@ const Profile = (props: RouteProps) => {
                     border: "1px solid #fee2e2",
                     borderRadius: 6,
                     padding: "8px 12px",
-                    fontSize: "0.8rem",
+                    fontSize: "0.825rem",
                     color: "#991b1b",
                   }}
                 >
                   <i className="bi bi-exclamation-circle" style={{ marginRight: 6 }}></i>
-                  Please verify your email address via OTP before biometric enrollment.
+                  Please verify your email address via OTP before enrolling facial biometrics.
                 </div>
               ) : (
                 <>
@@ -325,16 +326,16 @@ const Profile = (props: RouteProps) => {
                     className="button-primary"
                     style={{ fontSize: "0.85rem", padding: "8px 16px" }}
                   >
-                    <i className="bi bi-person-bounding-box" style={{ marginRight: 6 }}></i>
-                    {bioStatus.hasEnrolled ? "Re-enroll Face Biometrics" : "Enroll Face"}
+                    <i className="bi bi-camera"></i>
+                    <span>{bioStatus.hasEnrolled ? "Re-enroll Face Biometrics" : "Set Up Face Biometrics"}</span>
                   </button>
 
                   {bioStatus.hasEnrolled && (
                     <>
                       {deleteConfirm ? (
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span style={{ fontSize: "0.8rem", color: "#dc2626", fontWeight: 600 }}>
-                            Confirm delete?
+                            Permanently delete template?
                           </span>
                           <button
                             type="button"
@@ -343,13 +344,14 @@ const Profile = (props: RouteProps) => {
                               background: "#dc2626",
                               color: "#fff",
                               border: "none",
-                              borderRadius: 4,
-                              padding: "4px 8px",
-                              fontSize: "0.75rem",
+                              borderRadius: 6,
+                              padding: "6px 10px",
+                              fontSize: "0.8rem",
                               cursor: "pointer",
+                              fontWeight: 600,
                             }}
                           >
-                            Yes, Delete
+                            Confirm Delete
                           </button>
                           <button
                             type="button"
@@ -357,9 +359,9 @@ const Profile = (props: RouteProps) => {
                             style={{
                               background: "transparent",
                               border: "1px solid #cbd5e1",
-                              borderRadius: 4,
-                              padding: "4px 8px",
-                              fontSize: "0.75rem",
+                              borderRadius: 6,
+                              padding: "6px 10px",
+                              fontSize: "0.8rem",
                               cursor: "pointer",
                             }}
                           >
@@ -379,9 +381,13 @@ const Profile = (props: RouteProps) => {
                             fontSize: "0.825rem",
                             cursor: "pointer",
                             fontWeight: 600,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6,
                           }}
                         >
-                          <i className="bi bi-trash" style={{ marginRight: 4 }}></i> Delete Biometrics
+                          <i className="bi bi-trash"></i>
+                          <span>Delete Face Profile</span>
                         </button>
                       )}
                     </>
@@ -393,7 +399,7 @@ const Profile = (props: RouteProps) => {
         </div>
       </div>
 
-      {/* Face Capture / Enrollment Modal */}
+      {/* Biometric Enrollment Modal */}
       <BiometricCaptureModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}

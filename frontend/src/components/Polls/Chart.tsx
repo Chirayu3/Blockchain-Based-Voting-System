@@ -12,7 +12,7 @@ interface ChartProps {
 }
 
 const Chart = (props: ChartProps) => {
-  const votes = props.votes;
+  const votes = props.votes || {};
   const authContext = useContext(AuthContext);
   const [submitting, setSubmitting] = useState<string>("");
   const [selectedCandidate, setSelectedCandidate] = useState<string>("");
@@ -110,33 +110,18 @@ const Chart = (props: ChartProps) => {
       });
   };
 
-  const getButtons = () => {
-    const names = [];
-
+  const getTotal = () => {
+    let total = 0;
     for (const name in votes) {
-      const isCurrentSubmitting = submitting === name;
-      names.push(
-        <button
-          onClick={() => handleVoteInitiation(name)}
-          key={name}
-          disabled={submitting !== "" || checkingStatus}
-          className="button-wrapper text-normal"
-          style={{
-            opacity: submitting !== "" || checkingStatus ? 0.7 : 1,
-            cursor: submitting !== "" || checkingStatus ? "not-allowed" : "pointer",
-          }}
-        >
-          {isCurrentSubmitting ? "Submitting Ballot..." : `Vote for ${name}`}
-        </button>
-      );
+      total += parseInt(votes[name]) || 0;
     }
-
-    return names;
+    return total;
   };
+
+  const total = getTotal();
 
   const getNames = () => {
     const names = [];
-
     for (const name in votes) {
       names.push(
         <div key={name} className="name-wrapper text-normal">
@@ -144,56 +129,39 @@ const Chart = (props: ChartProps) => {
         </div>
       );
     }
-
     return names;
-  };
-
-  const getTotal = () => {
-    let total = 0;
-
-    for (const name in votes) {
-      total += parseInt(votes[name]);
-    }
-
-    return total;
   };
 
   const getBars = () => {
     const bars = [];
-    const total = getTotal();
-
     for (const name in votes) {
-      const count = votes[name];
+      const count = parseInt(votes[name]) || 0;
       bars.push(
         <div key={name} className="bar-wrapper">
           <div
             style={{
               height: count !== 0 ? `${(count * 100) / (total || 1)}%` : "auto",
-              border: "2px solid #2563eb",
               display: "flex",
               flexDirection: "column",
               justifyContent: "flex-end",
               alignItems: "center",
               color: "white",
-              backgroundColor: "#2563eb",
-              borderRadius: "6px 6px 0 0",
               paddingBottom: 10,
               paddingTop: 10,
             }}
           >
-            {votes[name]}
+            {count}
           </div>
         </div>
       );
     }
-
     return bars;
   };
 
   return (
-    <div>
+    <div className="chart-container-root">
       {error && (
-        <div className="error-message" style={{ margin: "12px 0" }}>
+        <div className="error-message" style={{ margin: "16px 0" }}>
           <span>
             <i className="bi bi-exclamation-triangle"></i>
           </span>
@@ -202,7 +170,7 @@ const Chart = (props: ChartProps) => {
       )}
 
       {successTx && (
-        <div className="success-message" style={{ margin: "12px 0" }}>
+        <div className="success-message" style={{ margin: "16px 0" }}>
           <span>
             <i className="bi bi-shield-check"></i>
           </span>
@@ -213,11 +181,69 @@ const Chart = (props: ChartProps) => {
         </div>
       )}
 
+      {/* Visual Bar Chart */}
       <div className="bars-container">{getBars()}</div>
       <div className="names-wrapper">{getNames()}</div>
 
+      {/* Interactive Voter Ballot Section */}
       {props.enableVote ? (
-        <div className="buttons-wrapper">{getButtons()}</div>
+        <div className="ballot-section-wrapper">
+          <div className="ballot-title-row">
+            <h3>
+              <i className="bi bi-envelope-paper-fill" style={{ color: "#2563eb", marginRight: 8 }}></i>
+              Cast Your Cryptographic Ballot
+            </h3>
+            <p>
+              Select your chosen candidate below. Facial biometric verification will authorize your transaction.
+            </p>
+          </div>
+
+          <div className="candidate-cards-grid">
+            {Object.keys(votes).map((candidateName) => {
+              const isCurrentSubmitting = submitting === candidateName;
+              const count = parseInt(votes[candidateName]) || 0;
+              const pct = total > 0 ? ((count / total) * 100).toFixed(1) : "0";
+
+              return (
+                <div key={candidateName} className="candidate-ballot-card">
+                  <div className="card-top">
+                    <div className="candidate-avatar">
+                      <i className="bi bi-person-fill"></i>
+                    </div>
+                    <div className="candidate-info">
+                      <div className="card-name">{candidateName}</div>
+                      <div className="card-votes-tag">
+                        Current: {count} {count === 1 ? "vote" : "votes"} ({pct}%)
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleVoteInitiation(candidateName)}
+                    disabled={submitting !== "" || checkingStatus}
+                    className="vote-action-button"
+                  >
+                    {isCurrentSubmitting ? (
+                      <>
+                        <span className="app-spinner" style={{ width: 16, height: 16, borderWidth: 2 }}></span>
+                        <span>Securing Ballot...</span>
+                      </>
+                    ) : checkingStatus && selectedCandidate === candidateName ? (
+                      <>
+                        <i className="bi bi-arrow-repeat"></i> Checking Biometrics...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-check-circle"></i> Vote for {candidateName}
+                      </>
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       ) : null}
 
       {/* First-Time Voter Enrollment Prompt Modal */}

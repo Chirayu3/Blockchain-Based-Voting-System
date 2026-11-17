@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 import axios from "../../axios";
 
@@ -101,7 +101,7 @@ const Dashboard = (): JSX.Element => {
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
   const [copiedHash, setCopiedHash] = useState<string>("");
 
-  const fetchStats = () => {
+  const fetchStats = useCallback(() => {
     axios
       .get("/polls/admin/stats")
       .then((res) => {
@@ -115,13 +115,13 @@ const Dashboard = (): JSX.Element => {
         console.error("Failed to fetch admin dashboard statistics:", err);
         setLoading(false);
       });
-  };
+  }, [selectedElectionId]);
 
   useEffect(() => {
     fetchStats();
     const interval = setInterval(fetchStats, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchStats]);
 
   // Fetch full details and transaction history whenever selected election changes
   useEffect(() => {

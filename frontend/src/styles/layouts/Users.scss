@@ -1,18 +1,6 @@
 .users-wrapper {
   @include boxes-wrapper;
 
-  &::before {
-    content: "Voter Identity Verification";
-    display: block;
-    font-size: 1.5rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: $theme-text;
-    margin-bottom: 8px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid $theme-border;
-  }
-
   .user-wrapper {
     @include box-wrapper;
     display: flex;
@@ -145,6 +133,10 @@
   text-align: center;
   @include box-shadow-elevated;
 
+  .verify-header {
+    margin-bottom: 24px;
+  }
+
   .verify-icon {
     width: 64px;
     height: 64px;
@@ -169,7 +161,7 @@
   .text-normal {
     font-size: 0.95rem;
     color: $theme-text-muted;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
 
     strong {
       color: $theme-text;

@@ -4,165 +4,467 @@
   flex-direction: column;
   position: relative;
   background-color: #f8fafc;
+}
 
-  .default-sidebar-container {
-    width: 100%;
-    background: #ffffff;
-    border-bottom: 1px solid $theme-border;
+// Modern Top Navigation Header Bar
+.app-top-header {
+  position: sticky;
+  top: 0;
+  z-index: 800;
+  background: #ffffff;
+  border-bottom: 1px solid $theme-border;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  width: 100%;
+
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 24px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-    position: sticky;
-    top: 0;
-    z-index: 900;
+    gap: 16px;
 
-    .hamburger {
-      font-size: 1.5rem;
-      color: $theme-text;
-      padding: 8px 12px;
+    @media (max-width: 640px) {
+      padding: 10px 14px;
+    }
+  }
+
+  // Brand
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.85;
+    }
+
+    .brand-logo-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, $theme-primary 0%, #1d4ed8 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+
+      .brand-name {
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: #0f172a;
+        line-height: 1.1;
+      }
+
+      .brand-subtitle {
+        font-size: 0.725rem;
+        font-weight: 600;
+        color: #64748b;
+        letter-spacing: 0.02em;
+      }
+    }
+  }
+
+  // Desktop Navigation
+  .header-desktop-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    @media (max-width: 880px) {
+      display: none;
+    }
+
+    .nav-tab-button {
+      padding: 7px 14px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #475569;
+      background: transparent;
+      border: 1px solid transparent;
       border-radius: 8px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 10px;
+      gap: 7px;
       transition: all 0.2s ease;
+      margin: 0;
+
+      i {
+        font-size: 1rem;
+        color: #64748b;
+        transition: color 0.2s ease;
+      }
+
+      &:hover {
+        color: #0f172a;
+        background: #f1f5f9;
+
+        i {
+          color: $theme-primary;
+        }
+      }
+
+      &.active {
+        color: $theme-primary;
+        background: #eff6ff;
+        border-color: rgba(37, 99, 235, 0.2);
+
+        i {
+          color: $theme-primary;
+        }
+      }
+    }
+  }
+
+  // Right Header Controls
+  .header-right-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    // Network Status Chip
+    .network-status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.775rem;
+      font-weight: 600;
+      color: #059669;
+      background: #ecfdf5;
+      padding: 5px 10px;
+      border-radius: 9999px;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+
+      @media (max-width: 600px) {
+        display: none;
+      }
+
+      .network-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #10b981;
+        animation: radarPulse 2s infinite;
+      }
+    }
+
+    // User Profile Chip
+    .user-profile-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px 4px 6px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
       background: #f8fafc;
-      border: 1px solid $theme-border;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #ffffff;
+        border-color: #cbd5e1;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+      }
+
+      .user-avatar-circle {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #eff6ff;
+        color: $theme-primary;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        border: 1px solid rgba(37, 99, 235, 0.15);
+      }
+
+      .user-meta-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+
+        .user-display-name {
+          font-size: 0.825rem;
+          font-weight: 700;
+          color: #0f172a;
+          max-width: 110px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .user-role-label {
+          font-size: 0.675rem;
+          font-weight: 600;
+          color: #64748b;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+        }
+      }
+    }
+
+    // Header Logout Button
+    .header-logout-button {
+      padding: 7px 12px;
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: #64748b;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      transition: all 0.2s ease;
+
+      @media (max-width: 880px) {
+        display: none;
+      }
+
+      &:hover {
+        color: #dc2626;
+        background: #fef2f2;
+        border-color: #fecaca;
+      }
+    }
+
+    // Mobile Hamburger
+    .mobile-menu-trigger {
+      display: none;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 1.25rem;
+      color: #0f172a;
+      cursor: pointer;
+      margin: 0;
+
+      @media (max-width: 880px) {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
 
       &:hover {
         background: #f1f5f9;
         color: $theme-primary;
-        border-color: #cbd5e1;
-      }
-
-      &::after {
-        content: "Dashboard Menu";
-        font-size: 0.85rem;
-        font-weight: 600;
-        font-family: inherit;
-        color: $theme-text;
-      }
-    }
-
-    &::after {
-      content: "• Ethereum Testnet Connected";
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #059669;
-      background: #ecfdf5;
-      padding: 5px 12px;
-      border-radius: 9999px;
-      border: 1px solid rgba(16, 185, 129, 0.25);
-      letter-spacing: 0.02em;
-
-      @media (max-width: 540px) {
-        display: none;
-      }
-    }
-
-    .default-sidebar {
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      height: 100vh;
-      width: 280px;
-      max-width: 85vw;
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      background: linear-gradient(180deg, #0b0f19 0%, #0f172a 100%);
-      color: #ffffff;
-      box-shadow: 0 20px 30px rgba(0, 0, 0, 0.35);
-      padding: 24px 16px;
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid rgba(255, 255, 255, 0.08);
-
-      .hamburger {
-        font-size: 1.4rem;
-        color: #94a3b8;
-        background: transparent;
-        border: none;
-        align-self: flex-end;
-        padding: 6px;
-        margin-bottom: 24px;
-
-        &:hover {
-          color: #ffffff;
-        }
-
-        &::after {
-          display: none;
-        }
-      }
-
-      &::before {
-        content: "BBVS Protocol";
-        display: block;
-        font-size: 1.15rem;
-        font-weight: 800;
-        letter-spacing: -0.01em;
-        color: #ffffff;
-        padding: 0 16px 20px 16px;
-        margin-bottom: 12px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      .default-sidebar-link {
-        padding: 12px 16px;
-        font-size: 0.925rem;
-        font-weight: 500;
-        letter-spacing: 0.02em;
-        cursor: pointer;
-        border-radius: 8px;
-        color: #94a3b8;
-        margin-bottom: 6px;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-
-        &:hover {
-          background-color: rgba(255, 255, 255, 0.06);
-          color: #ffffff;
-          transform: translateX(3px);
-        }
-
-        &.active {
-          background: linear-gradient(135deg, $theme-primary 0%, #1d4ed8 100%);
-          color: #ffffff;
-          font-weight: 600;
-          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
-        }
       }
     }
   }
+}
 
-  .default-content {
-    flex: 1;
-    width: 100%;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 32px 20px 48px 20px;
-    box-sizing: border-box;
+// Mobile Drawer Sidebar Navigation
+.mobile-drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 990;
+  animation: fadeIn 0.2s ease;
+}
+
+.mobile-sidebar-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 290px;
+  max-width: 85vw;
+  background: #ffffff;
+  z-index: 1000;
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px;
+  box-sizing: border-box;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.open {
+    transform: translateX(0);
+  }
+
+  .drawer-header {
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 16px;
 
-    @media (max-width: 768px) {
-      padding: 20px 14px 40px 14px;
+    .brand-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      display: block;
+    }
+
+    .brand-subtitle {
+      font-size: 0.725rem;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .drawer-close-btn {
+      background: none;
+      border: none;
+      font-size: 1.15rem;
+      color: #64748b;
+      cursor: pointer;
+      padding: 4px;
+      margin: 0;
+
+      &:hover {
+        color: #0f172a;
+      }
+    }
+  }
+
+  .drawer-user-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    cursor: pointer;
+
+    .user-avatar-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #eff6ff;
+      color: $theme-primary;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .user-display-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .user-role-label {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-weight: 500;
+    }
+  }
+
+  .drawer-nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+
+    .drawer-link-button {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      font-size: 0.925rem;
+      font-weight: 600;
+      color: #334155;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+      margin: 0;
+      transition: all 0.2s ease;
+
+      i {
+        font-size: 1.15rem;
+        color: #64748b;
+      }
+
+      &:hover {
+        background: #f1f5f9;
+        color: $theme-primary;
+
+        i {
+          color: $theme-primary;
+        }
+      }
+
+      &.active {
+        background: #eff6ff;
+        color: $theme-primary;
+        border-left: 3px solid $theme-primary;
+
+        i {
+          color: $theme-primary;
+        }
+      }
+    }
+  }
+
+  .drawer-footer {
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+
+    .drawer-logout-button {
+      width: 100%;
+      padding: 10px;
+      background: #fef2f2;
+      border: 1px solid #fee2e2;
+      border-radius: 8px;
+      color: #dc2626;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 0;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #fee2e2;
+        border-color: #fecaca;
+      }
     }
   }
 }
 
-.display {
-  transform: translateX(0) !important;
-}
+// Main Content Area
+.default-content {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 20px 48px 20px;
+  box-sizing: border-box;
 
-.hide {
-  transform: translateX(-105%) !important;
-}
-
-.active {
-  background-color: $theme-secondary;
+  @media (max-width: 768px) {
+    padding: 20px 14px 40px 14px;
+  }
 }

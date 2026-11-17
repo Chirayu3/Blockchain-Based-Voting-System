@@ -12,6 +12,22 @@
     padding: 50px 20px 70px 20px;
   }
 
+  .features-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.775rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $theme-primary;
+    background: #eff6ff;
+    border: 1px solid rgba(37, 99, 235, 0.2);
+    padding: 6px 14px;
+    border-radius: 9999px;
+    margin-bottom: 16px;
+  }
+
   & > .title-large {
     font-size: 2.5rem;
     font-weight: 800;
@@ -25,21 +41,14 @@
     }
   }
 
-  & > .title-small {
-    font-size: 0;
+  & > .features-subtitle {
+    font-size: 1.05rem;
+    color: $theme-text-muted;
+    font-weight: 400;
     text-align: center;
-    margin-bottom: 40px;
-
-    &::after {
-      content: "Enterprise-grade cryptography and decentralized ledger guarantees for tamper-proof elections";
-      font-size: 1.05rem;
-      color: $theme-text-muted;
-      font-weight: 400;
-      text-transform: none;
-      display: block;
-      max-width: 580px;
-      line-height: 1.6;
-    }
+    margin-bottom: 48px;
+    max-width: 600px;
+    line-height: 1.6;
   }
 
   .mobile-wrapper {
@@ -48,7 +57,7 @@
     grid-template-columns: 1fr 300px 1fr;
     gap: 32px;
     align-items: center;
-    padding-top: 20px;
+    padding-top: 10px;
 
     @media (max-width: 960px) {
       grid-template-columns: 1fr;

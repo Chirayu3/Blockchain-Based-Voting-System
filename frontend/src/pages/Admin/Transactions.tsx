@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "../../axios";
 
 interface TransactionItem {
@@ -32,7 +32,7 @@ const Transactions: React.FC = () => {
   const [selectedTx, setSelectedTx] = useState<TransactionItem | null>(null);
   const [copiedHash, setCopiedHash] = useState<string>("");
 
-  const fetchTransactions = () => {
+  const fetchTransactions = useCallback(() => {
     setLoading(true);
     const params: any = {};
     if (search.trim()) params.search = search.trim();
@@ -50,11 +50,11 @@ const Transactions: React.FC = () => {
         console.error("Failed to fetch blockchain transactions:", err);
         setLoading(false);
       });
-  };
+  }, [search, statusFilter, electionFilter]);
 
   useEffect(() => {
     fetchTransactions();
-  }, [statusFilter, electionFilter]);
+  }, [fetchTransactions]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
