@@ -201,6 +201,7 @@ export default async (req: AuthenticatedRequest, res: Response) => {
       candidateName,
       {
         from: accounts[0],
+        gas: 6721975,
       }
     );
   } catch (error: any) {

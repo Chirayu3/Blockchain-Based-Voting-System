@@ -113,7 +113,7 @@ const Start = () => {
                     ? err.response.data
                     : JSON.stringify(err.response.data);
               }
-              setError(msg.slice(0, 150));
+              setError(msg);
               setLoading(false);
             });
         }}
