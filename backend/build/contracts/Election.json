@@ -14886,7 +14886,10 @@
   },
   "networks": {
     "5777": {
-      "address": "0xC8B249768f3b39175766dD92EB5D3a39cCE724E0"
+      "events": {},
+      "links": {},
+      "address": "0xAbb0d5FF7be068343C68016a4ad87CdFf2658A72",
+      "transactionHash": "0x599e500bf5a37b5a1007f69bdfcaac25ed6f2f0d0db687f81d9a5630f8459047"
     }
   },
   "schemaVersion": "3.4.16",
