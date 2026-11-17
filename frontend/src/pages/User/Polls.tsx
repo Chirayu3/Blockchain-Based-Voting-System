@@ -12,72 +12,99 @@ const User = () => {
   const [voteState, setVoteStatus] = useState<
     "finished" | "running" | "not-started" | "checking"
   >("checking");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<{ id?: number; name: string; description: string; votes: any }>({
     id: 1,
     name: "",
     description: "",
     votes: {},
   });
-  const [votable, setVotable] = useState("");
+  const [votable, setVotable] = useState<string>("");
 
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
+    let isMounted = true;
     axios
       .get("/polls/status")
       .then((res) => {
-        setVoteStatus(res.data.status);
-        setLoading(false);
+        if (!isMounted) return;
+        const currentStatus = res.data?.status || "not-started";
+        setVoteStatus(currentStatus);
+        if (currentStatus === "not-started") {
+          setLoading(false);
+        }
       })
       .catch((error) => {
+        if (!isMounted) return;
         console.error("Error fetching poll status:", error);
+        setVoteStatus("not-started");
         setLoading(false);
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
-    if (voteState !== "checking") {
+    let isMounted = true;
+
+    if (voteState === "running" || voteState === "finished") {
       axios
         .get("/polls/")
         .then((res) => {
+          if (!isMounted) return;
           setData(res.data);
           setLoading(false);
         })
         .catch((err) => {
+          if (!isMounted) return;
           console.error("Error fetching poll details:", err);
           setLoading(false);
         });
 
-      if (authContext.id) {
+      if (authContext.id && voteState === "running") {
         axios
           .post("/polls/check-voteability", {
             id: authContext.id.toString(),
           })
           .then((res) => {
+            if (!isMounted) return;
             setVotable(res.data);
           })
-          .catch((err) => console.error("Error checking voteability:", err));
+          .catch((err) => {
+            console.error("Error checking voteability:", err);
+          });
       }
+    } else if (voteState === "not-started") {
+      setLoading(false);
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [voteState, authContext.id]);
 
-  if (loading || voteState === "checking")
+  if (loading || voteState === "checking") {
     return (
       <div className="app-loading-screen">
         <div className="app-spinner"></div>
         <div className="app-loading-text">Verifying Ballot Eligibility...</div>
       </div>
     );
+  }
 
-  if (voteState === "not-started") return <Waiting />;
+  if (voteState === "not-started") {
+    return <Waiting />;
+  }
 
   return (
     <Panel name={data.name} description={data.description}>
       <>
         {voteState === "running" ? <Running /> : <Finished />}
 
-        {votable === "voted" && (
+        {votable === "already-voted" && (
           <div
             style={{
               width: "100%",

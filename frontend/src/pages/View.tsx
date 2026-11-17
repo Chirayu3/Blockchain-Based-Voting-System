@@ -24,6 +24,7 @@ const View = (props: RouteProps): JSX.Element => {
       })
       .catch((error) => {
         console.error("Error fetching ballot status:", error);
+        setStatus("not-started");
         setLoading(false);
       });
   }, []);

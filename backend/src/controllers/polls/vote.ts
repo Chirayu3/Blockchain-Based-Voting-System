@@ -31,15 +31,20 @@ export const checkVoteability = async (
     return res.status(400).send("Voter identity required");
   }
 
-  const instance = await ElectionContract.deployed();
-  const voters: Array<any> = await instance.getVoters();
-  const status: "not-started" | "running" | "finished" =
-    await instance.getStatus();
+  try {
+    const instance = await ElectionContract.deployed();
+    const status: "not-started" | "running" | "finished" =
+      await instance.getStatus();
 
-  if (status !== "running") return res.status(400).send("election not running");
-  if (voters.includes(voterIdStr)) return res.send("already-voted");
+    if (status !== "running") return res.send("not-running");
+    const voters: Array<any> = await instance.getVoters();
+    if (voters.includes(voterIdStr)) return res.send("already-voted");
 
-  return res.send("not-voted");
+    return res.send("not-voted");
+  } catch (err: any) {
+    console.warn("[Check Voteability] Contract check failed:", err.message);
+    return res.send("not-running");
+  }
 };
 
 const schema = yup.object({
